@@ -29,6 +29,7 @@
 #include "veins/modules/mobility/traci/TraCIConstants.h"
 #include "veins/modules/mobility/traci/TraCIMobility.h"
 #include "veins/modules/obstacle/ObstacleControl.h"
+#include "veins/modules/floor/FloorControl.h"
 #include "veins/modules/world/traci/trafficLight/TraCITrafficLightInterface.h"
 
 #define LENGTH 4.5 // assumed vehicle length
@@ -459,6 +460,38 @@ void TraCIScenarioManager::init_traci() {
 				std::copy(coords.begin(), coords.end(), std::back_inserter(shape));
 				obstacles->addFromTypeAndShape(id, typeId, shape);
 			}
+		}
+	}
+
+	FloorControl* floorControl = FloorControlAccess().getIfExists();
+	if (floorControl) {
+		std::list<std::string> lanes = getCommandInterface()->getLaneIds();
+		for (std::string id: lanes) {
+			// TODO: check type similar to obstacles
+			//std::string typeId = getCommandInterface()->lane(id).getTypeId();
+			//if (!obstacles->isTypeSupported(typeId)) continue;
+			std::string roadId = getCommandInterface()->lane(id).getRoadId();
+			std::string roadName = getCommandInterface()->road(roadId).getName();
+
+			// only roads marked as floors are considered
+			// TODO: find better way of only considering elevated roads
+			if (roadName.find("_FLOOR") == std::string::npos) continue;
+
+			std::list<Coord> coords = getCommandInterface()->lane(id).getShape();
+			double laneWidth = getCommandInterface()->lane(id).getWidth();
+			std::vector<Coord> shape;
+			std::copy(coords.begin(), coords.end(), std::back_inserter(shape));
+			floorControl->addLaneFromTypeAndShape(id, "", shape, laneWidth);
+		}
+		std::list<std::string> junctions = getCommandInterface()->getJunctionIds();
+		for (std::string id: junctions) {
+			// TODO: check type similar to obstacles
+			//std::string typeId = getCommandInterface()->lane(id).getTypeId();
+			//if (!obstacles->isTypeSupported(typeId)) continue;
+			std::list<Coord> coords = getCommandInterface()->junction(id).getShape();
+			std::vector<Coord> shape;
+			std::copy(coords.begin(), coords.end(), std::back_inserter(shape));
+			floorControl->addJunctionFromTypeAndShape(id, "", shape);
 		}
 	}
 

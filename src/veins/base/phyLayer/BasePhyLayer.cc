@@ -69,7 +69,7 @@ void BasePhyLayer::initialize(int stage) {
 		if(par("useThermalNoise").boolValue()) {
 			double thermalNoiseVal = FWMath::dBm2mW(par("thermalNoise").doubleValue());
 			thermalNoise = new ConstantSimpleConstMapping(DimensionSet::timeDomain(),
-														  thermalNoiseVal);
+					thermalNoiseVal);
 		} else {
 			thermalNoise = 0;
 		}
@@ -84,18 +84,18 @@ void BasePhyLayer::initialize(int stage) {
 
 		// get pointer to the world module
 		world = FindModule<BaseWorldUtility*>::findGlobalModule();
-        if (world == NULL) {
-            throw cRuntimeError("Could not find BaseWorldUtility module");
-        }
-
-        if(cc->hasPar("sat")
-		   && (sensitivity - FWMath::dBm2mW(cc->par("sat").doubleValue())) < -0.000001) {
-            throw cRuntimeError("Sensitivity can't be smaller than the "
-					  "signal attenuation threshold (sat) in ConnectionManager. "
-					  "Please adjust your omnetpp.ini file accordingly.");
+		if (world == NULL) {
+			throw cRuntimeError("Could not find BaseWorldUtility module");
 		}
 
-//	} else if (stage == 1){
+		if(cc->hasPar("sat")
+				&& (sensitivity - FWMath::dBm2mW(cc->par("sat").doubleValue())) < -0.000001) {
+			throw cRuntimeError("Sensitivity can't be smaller than the "
+					"signal attenuation threshold (sat) in ConnectionManager. "
+					"Please adjust your omnetpp.ini file accordingly.");
+		}
+
+		//	} else if (stage == 1){
 		//read complex(xml) ned-parameters
 		//	- analogue model parameters
 		initializeAnalogueModels(par("analogueModels").xmlValue());
@@ -120,8 +120,8 @@ Radio* BasePhyLayer::initializeRadio() {
 	int initialRadioChannel = readPar("initialRadioChannel", 0);
 
 	Radio* radio = Radio::createNewRadio(recordStats, initialRadioState,
-										 radioMinAtt, radioMaxAtt,
-										 initialRadioChannel, nbRadioChannels);
+			radioMinAtt, radioMaxAtt,
+			initialRadioChannel, nbRadioChannels);
 
 	//	- switch times to TX
 	//if no RX to TX defined asume same time as sleep to TX
@@ -238,193 +238,193 @@ Decider* BasePhyLayer::getDeciderFromName(std::string name, ParameterMap& params
 //-----Antenna initialization----------------------
 
 void BasePhyLayer::initializeAntenna(cXMLElement* xmlConfig) {
-    antenna = 0;
+	antenna = 0;
 
-    if(xmlConfig == 0) {
-        throw cRuntimeError("No antenna configuration file specified.");
-    }
+	if(xmlConfig == 0) {
+		throw cRuntimeError("No antenna configuration file specified.");
+	}
 
-    cXMLElementList antennaList = xmlConfig->getElementsByTagName("Antenna");
+	cXMLElementList antennaList = xmlConfig->getElementsByTagName("Antenna");
 
-    if(antennaList.empty()) {
-        throw cRuntimeError("No antenna configuration found in configuration file.");
-    }
+	if(antennaList.empty()) {
+		throw cRuntimeError("No antenna configuration found in configuration file.");
+	}
 
-    cXMLElement* antennaData;
-    if(antennaList.size() > 1) {
-        int num = intuniform(0, antennaList.size() - 1);
-        antennaData = antennaList[num];
-    } else {
-        antennaData = antennaList.front();
-    }
+	cXMLElement* antennaData;
+	if(antennaList.size() > 1) {
+		int num = intuniform(0, antennaList.size() - 1);
+		antennaData = antennaList[num];
+	} else {
+		antennaData = antennaList.front();
+	}
 
-    const char* name = antennaData->getAttribute("type");
+	const char* name = antennaData->getAttribute("type");
 
-    if(name == 0) {
-        throw cRuntimeError("Could not read type of antenna from configuration file.");
-    }
+	if(name == 0) {
+		throw cRuntimeError("Could not read type of antenna from configuration file.");
+	}
 
-    ParameterMap params;
-    getParametersFromXML(antennaData, params);
+	ParameterMap params;
+	getParametersFromXML(antennaData, params);
 
-    antenna = getAntennaFromName(name, params);
+	antenna = getAntennaFromName(name, params);
 
-    if(antenna == 0) {
-        throw cRuntimeError("Could not find an antenna with the name \"%s\".", name);
-    }
+	if(antenna == 0) {
+		throw cRuntimeError("Could not find an antenna with the name \"%s\".", name);
+	}
 
-    const char* id = antennaData->getAttribute("id");
-    coreEV << "Antenna \"" << name << "\" with ID \"" << id << "\" loaded." << endl;
+	const char* id = antennaData->getAttribute("id");
+	coreEV << "Antenna \"" << name << "\" with ID \"" << id << "\" loaded." << endl;
 }
 
 std::shared_ptr<Antenna> BasePhyLayer::getAntennaFromName(std::string name, ParameterMap& params) {
-    if (name == "SampledAntenna1D") {
-        return initializeSampledAntenna1D(params);
-    } else if (name == "SampledAntenna2D") {
-        return initializeSampledAntenna2D(params);
-    }
+	if (name == "SampledAntenna1D") {
+		return initializeSampledAntenna1D(params);
+	} else if (name == "SampledAntenna2D") {
+		return initializeSampledAntenna2D(params);
+	}
 
-    return std::make_shared<Antenna>();
+	return std::make_shared<Antenna>();
 }
 
 std::shared_ptr<Antenna> BasePhyLayer::initializeSampledAntenna1D(ParameterMap& params) {
-    // get samples of the modeled antenna and put them in a vector
-    ParameterMap::iterator it = params.find("samples");
-    std::vector<double> values;
-    if (it != params.end())
-    {
-        std::string buf;
-        std::stringstream samplesStream(it->second.stringValue());
-        while (samplesStream >> buf){
-            values.push_back(stod(buf));
-        }
-    } else {
-        throw cRuntimeError("BasePhyLayer::initializeSampledAntenna1D(): No samples specified for this antenna. \
+	// get samples of the modeled antenna and put them in a vector
+	ParameterMap::iterator it = params.find("samples");
+	std::vector<double> values;
+	if (it != params.end())
+	{
+		std::string buf;
+		std::stringstream samplesStream(it->second.stringValue());
+		while (samplesStream >> buf){
+			values.push_back(stod(buf));
+		}
+	} else {
+		throw cRuntimeError("BasePhyLayer::initializeSampledAntenna1D(): No samples specified for this antenna. \
                            Please adjust your xml file accordingly.");
-    }
+	}
 
-    // get optional random offsets for the antenna's samples
-    it = params.find("random-offsets");
-    std::string offsetType = "";
-    std::vector<double> offsetParams;
-    if (it != params.end())
-    {
-        std::string buf;
-        std::stringstream offsetStream(it->second.stringValue());
-        offsetStream >> offsetType;
-        while (offsetStream >> buf){
-            offsetParams.push_back(stod(buf));
-        }
-    }
+	// get optional random offsets for the antenna's samples
+	it = params.find("random-offsets");
+	std::string offsetType = "";
+	std::vector<double> offsetParams;
+	if (it != params.end())
+	{
+		std::string buf;
+		std::stringstream offsetStream(it->second.stringValue());
+		offsetStream >> offsetType;
+		while (offsetStream >> buf){
+			offsetParams.push_back(stod(buf));
+		}
+	}
 
-    // get optional random rotation of the whole pattern
-    it = params.find("random-rotation");
-    std::string rotationType = "";
-    std::vector<double> rotationParams;
-    if (it != params.end())
-    {
-        std::string buf;
-        std::stringstream rotationStream(it->second.stringValue());
-        rotationStream >> rotationType;
-        while (rotationStream >> buf){
-            rotationParams.push_back(stod(buf));
-        }
-    }
+	// get optional random rotation of the whole pattern
+	it = params.find("random-rotation");
+	std::string rotationType = "";
+	std::vector<double> rotationParams;
+	if (it != params.end())
+	{
+		std::string buf;
+		std::stringstream rotationStream(it->second.stringValue());
+		rotationStream >> rotationType;
+		while (rotationStream >> buf){
+			rotationParams.push_back(stod(buf));
+		}
+	}
 
-    return std::make_shared<SampledAntenna1D>(values, offsetType, offsetParams, rotationType, rotationParams, this->getRNG(0));
+	return std::make_shared<SampledAntenna1D>(values, offsetType, offsetParams, rotationType, rotationParams, this->getRNG(0));
 }
 
 std::shared_ptr<Antenna> BasePhyLayer::initializeSampledAntenna2D(ParameterMap& params) {
-    // get azimuth samples of the modeled antenna and put them in a vector
-    ParameterMap::iterator it = params.find("azi-samples");
-    std::vector<double> aziValues;
-    if (it != params.end())
-    {
-        std::string buf;
-        std::stringstream aziSamplesStream(it->second.stringValue());
-        while (aziSamplesStream >> buf){
-            aziValues.push_back(stod(buf));
-        }
-    } else {
-        throw cRuntimeError("BasePhyLayer::initializeSampledAntenna2D(): No azimuth samples specified for this antenna. \
+	// get azimuth samples of the modeled antenna and put them in a vector
+	ParameterMap::iterator it = params.find("azi-samples");
+	std::vector<double> aziValues;
+	if (it != params.end())
+	{
+		std::string buf;
+		std::stringstream aziSamplesStream(it->second.stringValue());
+		while (aziSamplesStream >> buf){
+			aziValues.push_back(stod(buf));
+		}
+	} else {
+		throw cRuntimeError("BasePhyLayer::initializeSampledAntenna2D(): No azimuth samples specified for this antenna. \
                            Please adjust your xml file accordingly.");
-    }
+	}
 
-    // get optional random offsets for the antenna's azimuth samples
-    it = params.find("azi-random-offsets");
-    std::string aziOffsetType = "";
-    std::vector<double> aziOffsetParams;
-    if (it != params.end())
-    {
-        std::string buf;
-        std::stringstream aziOffsetStream(it->second.stringValue());
-        aziOffsetStream >> aziOffsetType;
-        while (aziOffsetStream >> buf){
-            aziOffsetParams.push_back(stod(buf));
-        }
-    }
+	// get optional random offsets for the antenna's azimuth samples
+	it = params.find("azi-random-offsets");
+	std::string aziOffsetType = "";
+	std::vector<double> aziOffsetParams;
+	if (it != params.end())
+	{
+		std::string buf;
+		std::stringstream aziOffsetStream(it->second.stringValue());
+		aziOffsetStream >> aziOffsetType;
+		while (aziOffsetStream >> buf){
+			aziOffsetParams.push_back(stod(buf));
+		}
+	}
 
-    // get optional random rotation of the whole azimuth pattern
-    it = params.find("azi-random-rotation");
-    std::string aziRotationType = "";
-    std::vector<double> aziRotationParams;
-    if (it != params.end())
-    {
-        std::string buf;
-        std::stringstream aziRotationStream(it->second.stringValue());
-        aziRotationStream >> aziRotationType;
-        while (aziRotationStream >> buf){
-            aziRotationParams.push_back(stod(buf));
-        }
-    }
+	// get optional random rotation of the whole azimuth pattern
+	it = params.find("azi-random-rotation");
+	std::string aziRotationType = "";
+	std::vector<double> aziRotationParams;
+	if (it != params.end())
+	{
+		std::string buf;
+		std::stringstream aziRotationStream(it->second.stringValue());
+		aziRotationStream >> aziRotationType;
+		while (aziRotationStream >> buf){
+			aziRotationParams.push_back(stod(buf));
+		}
+	}
 
 
-    // get elevation samples of the modeled antenna and put them in a vector
-    it = params.find("ele-samples");
-    std::vector<double> eleValues;
-    if (it != params.end())
-    {
-        std::string buf;
-        std::stringstream eleSamplesStream(it->second.stringValue());
-        while (eleSamplesStream >> buf){
-            eleValues.push_back(stod(buf));
-        }
-    } else {
-        throw cRuntimeError("BasePhyLayer::initializeSampledAntenna2D(): No elevation samples specified for this antenna. \
+	// get elevation samples of the modeled antenna and put them in a vector
+	it = params.find("ele-samples");
+	std::vector<double> eleValues;
+	if (it != params.end())
+	{
+		std::string buf;
+		std::stringstream eleSamplesStream(it->second.stringValue());
+		while (eleSamplesStream >> buf){
+			eleValues.push_back(stod(buf));
+		}
+	} else {
+		throw cRuntimeError("BasePhyLayer::initializeSampledAntenna2D(): No elevation samples specified for this antenna. \
                            Please adjust your xml file accordingly.");
-    }
+	}
 
-    // get optional random offsets for the antenna's elevation samples
-    it = params.find("ele-random-offsets");
-    std::string eleOffsetType = "";
-    std::vector<double> eleOffsetParams;
-    if (it != params.end())
-    {
-        std::string buf;
-        std::stringstream eleOffsetStream(it->second.stringValue());
-        eleOffsetStream >> eleOffsetType;
-        while (eleOffsetStream >> buf){
-            eleOffsetParams.push_back(stod(buf));
-        }
-    }
+	// get optional random offsets for the antenna's elevation samples
+	it = params.find("ele-random-offsets");
+	std::string eleOffsetType = "";
+	std::vector<double> eleOffsetParams;
+	if (it != params.end())
+	{
+		std::string buf;
+		std::stringstream eleOffsetStream(it->second.stringValue());
+		eleOffsetStream >> eleOffsetType;
+		while (eleOffsetStream >> buf){
+			eleOffsetParams.push_back(stod(buf));
+		}
+	}
 
-    // get optional random rotation of the whole azimuth pattern
-    it = params.find("ele-random-rotation");
-    std::string eleRotationType = "";
-    std::vector<double> eleRotationParams;
-    if (it != params.end())
-    {
-        std::string buf;
-        std::stringstream eleRotationStream(it->second.stringValue());
-        eleRotationStream >> eleRotationType;
-        while (eleRotationStream >> buf){
-            eleRotationParams.push_back(stod(buf));
-        }
-    }
+	// get optional random rotation of the whole azimuth pattern
+	it = params.find("ele-random-rotation");
+	std::string eleRotationType = "";
+	std::vector<double> eleRotationParams;
+	if (it != params.end())
+	{
+		std::string buf;
+		std::stringstream eleRotationStream(it->second.stringValue());
+		eleRotationStream >> eleRotationType;
+		while (eleRotationStream >> buf){
+			eleRotationParams.push_back(stod(buf));
+		}
+	}
 
 
-    return std::make_shared<SampledAntenna2D>(aziValues, aziOffsetType, aziOffsetParams, aziRotationType, aziRotationParams,
-            eleValues, eleOffsetType, eleOffsetParams, eleRotationType, eleRotationParams, this->getRNG(0));
+	return std::make_shared<SampledAntenna2D>(aziValues, aziOffsetType, aziOffsetParams, aziRotationType, aziRotationParams,
+			eleValues, eleOffsetType, eleOffsetParams, eleRotationType, eleRotationParams, this->getRNG(0));
 }
 
 
@@ -435,9 +435,9 @@ std::shared_ptr<Antenna> BasePhyLayer::initializeSampledAntenna2D(ParameterMap& 
 void BasePhyLayer::initializeAnalogueModels(cXMLElement* xmlConfig) {
 
 	/*
-	* first of all, attach the AnalogueModel that represents the RadioState
-	* to the AnalogueModelList as first element.
-	*/
+	 * first of all, attach the AnalogueModel that represents the RadioState
+	 * to the AnalogueModelList as first element.
+	 */
 
 	std::string s("RadioStateAnalogueModel");
 	ParameterMap p;
@@ -619,7 +619,7 @@ void BasePhyLayer::handleAirFrameReceiving(AirFrame* frame) {
 	//invalid point in time
 	} else if(nextHandleTime < simTime() || nextHandleTime > signalEndTime) {
 		throw cRuntimeError("Invalid next handle time returned by Decider. Expected a value between current simulation time (%.2f) and end of signal (%.2f) but got %.2f",
-								SIMTIME_DBL(simTime()), SIMTIME_DBL(signalEndTime), SIMTIME_DBL(nextHandleTime));
+				SIMTIME_DBL(simTime()), SIMTIME_DBL(signalEndTime), SIMTIME_DBL(nextHandleTime));
 	}
 
 	coreEV << "Handed AirFrame with ID " << frame->getId() << " to Decider. Next handling in " << nextHandleTime - simTime() << "s." << endl;
@@ -633,10 +633,10 @@ void BasePhyLayer::handleAirFrameEndReceive(AirFrame* frame) {
 	simtime_t earliestInfoPoint = channelInfo.removeAirFrame(frame);
 
 	/* clean information in the radio until earliest time-point
-	*  of information in the ChannelInfo,
-	*  since this time-point might have changed due to removal of
-	*  the AirFrame
-	*/
+	 *  of information in the ChannelInfo,
+	 *  since this time-point might have changed due to removal of
+	 *  the AirFrame
+	 */
 	if(channelInfo.isChannelEmpty()) {
 		earliestInfoPoint = simTime();
 		radio->setTrackingModeTo(false);
@@ -650,16 +650,16 @@ void BasePhyLayer::handleUpperMessage(cMessage* msg){
 	// check if Radio is in TX state
 	if (radio->getCurrentState() != Radio::TX)
 	{
-        delete msg;
-        msg = 0;
+		delete msg;
+		msg = 0;
 		throw cRuntimeError("Error: message for sending received, but radio not in state TX");
 	}
 
 	// check if not already sending
 	if(txOverTimer->isScheduled())
 	{
-        delete msg;
-        msg = 0;
+		delete msg;
+		msg = 0;
 		throw cRuntimeError("Error: message for sending received, but radio already sending");
 	}
 
@@ -669,10 +669,10 @@ void BasePhyLayer::handleUpperMessage(cMessage* msg){
 	AirFrame* frame = encapsMsg(static_cast<cPacket*>(msg));
 
 	// Prepare a POA object and attach it to the created Airframe
-    BaseMobility* sendersMobility = ChannelMobilityAccessType::get(this->getParentModule());
-    assert(sendersMobility);
-    Coord pos  = sendersMobility->getCurrentPosition();
-    Coord orient = sendersMobility->getCurrentOrientation();
+	BaseMobility* sendersMobility = ChannelMobilityAccessType::get(this->getParentModule());
+	assert(sendersMobility);
+	Coord pos  = sendersMobility->getCurrentPosition();
+	Coord orient = sendersMobility->getCurrentOrientation();
 	POA* poa = new POA(pos, orient, antenna);
 	frame->setPoa(*poa);
 	// the frame is now owner of the POA object
@@ -824,26 +824,26 @@ void BasePhyLayer::sendSelfMessage(cMessage* msg, simtime_t_cref time) {
 
 
 void BasePhyLayer::filterSignal(AirFrame *frame) {
-    // determine antenna gains first
-    // get POA from frame with the sender's position, orientation and antenna
-    POA& senderPOA = frame->getPoa();
-    // get own mobility module
-    BaseMobility* ownMobility = ChannelMobilityAccessType::get(this->getParentModule());
-    assert(ownMobility);
-    Coord ownPos  = ownMobility->getCurrentPosition();
-    Coord ownOrient = ownMobility->getCurrentOrientation();
-    // compute gains at sender and receiver antenna
-    double ownGain = antenna->getGain(ownPos, ownOrient, senderPOA.pos);
-    double otherGain = senderPOA.antenna->getGain(senderPOA.pos, senderPOA.orientation, ownPos);
+	// determine antenna gains first
+	// get POA from frame with the sender's position, orientation and antenna
+	POA& senderPOA = frame->getPoa();
+	// get own mobility module
+	BaseMobility* ownMobility = ChannelMobilityAccessType::get(this->getParentModule());
+	assert(ownMobility);
+	Coord ownPos  = ownMobility->getCurrentPosition();
+	Coord ownOrient = ownMobility->getCurrentOrientation();
+	// compute gains at sender and receiver antenna
+	double ownGain = antenna->getGain(ownPos, ownOrient, senderPOA.pos);
+	double otherGain = senderPOA.antenna->getGain(senderPOA.pos, senderPOA.orientation, ownPos);
 
-    coreEV << "Sender's antenna gain: " << otherGain << endl;
-    coreEV << "Own (receiver's) antenna gain: " << ownGain << endl;
-    // add the resulting total gain to the attenuations list using a ConstantSimpleConstMapping
-    bool hasFrequency = frame->getSignal().getTransmissionPower()->getDimensionSet().hasDimension(Dimension::frequency());
-    const DimensionSet& domain = hasFrequency ? DimensionSet::timeFreqDomain() : DimensionSet::timeDomain();
-    frame->getSignal().addAttenuation(new ConstantSimpleConstMapping(domain, ownGain*otherGain));
+	coreEV << "Sender's antenna gain: " << otherGain << endl;
+	coreEV << "Own (receiver's) antenna gain: " << ownGain << endl;
+	// add the resulting total gain to the attenuations list using a ConstantSimpleConstMapping
+	bool hasFrequency = frame->getSignal().getTransmissionPower()->getDimensionSet().hasDimension(Dimension::frequency());
+	const DimensionSet& domain = hasFrequency ? DimensionSet::timeFreqDomain() : DimensionSet::timeDomain();
+	frame->getSignal().addAttenuation(new ConstantSimpleConstMapping(domain, ownGain*otherGain));
 
-    // go on with AnalogueModels
+	// go on with AnalogueModels
 	if (analogueModels.empty())
 		return;
 
@@ -884,7 +884,7 @@ BasePhyLayer::~BasePhyLayer() {
 		cancelAndDelete(txOverTimer);
 	}
 	if(radioSwitchingOverTimer) {
-        cancelAndDelete(radioSwitchingOverTimer);
+		cancelAndDelete(radioSwitchingOverTimer);
 	}
 
 	//free thermal noise mapping

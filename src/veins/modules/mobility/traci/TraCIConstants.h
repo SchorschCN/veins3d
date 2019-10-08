@@ -414,6 +414,8 @@
 // last step jam length in meters
 #define JAM_LENGTH_METERS 0x19
 
+// full name (get: edges)
+#define VAR_NAME 0x1b
 
 // traffic light states, encoded as rRgGyYoO tuple (get: traffic lights)
 #define TL_RED_YELLOW_GREEN_STATE 0x20
@@ -705,8 +707,8 @@
 // clears the simulation of all not inserted vehicles (set: simulation)
 #define CMD_CLEAR_PENDING_VEHICLES 0x94
 
-
-
+// sets/retrieves abstract parameter
+#define VAR_PARAMETER 0x7e
 
 // add an instance (poi, polygon, vehicle, route)
 #define ADD 0x80

@@ -34,6 +34,8 @@
 #include "veins/modules/analogueModel/SimpleObstacleShadowing.h"
 #include "veins/modules/analogueModel/TwoRayInterferenceModel.h"
 #include "veins/modules/analogueModel/NakagamiFading.h"
+#include <veins/modules/analogueModel/FloorAttenuation.h>
+#include <veins/modules/floor/FloorControl.h>
 #include "veins/base/connectionManager/BaseConnectionManager.h"
 #include "veins/modules/utility/Consts80211p.h"
 #include "veins/modules/messages/AirFrame11p_m.h"
@@ -54,7 +56,7 @@ void PhyLayer80211p::initialize(int stage) {
 	BasePhyLayer::initialize(stage);
 	if (stage == 0) {
 		if (par("headerLength").longValue() != PHY_HDR_TOTAL_LENGTH) {
-		throw cRuntimeError("The header length of the 802.11p standard is 46bit, please change your omnetpp.ini accordingly by either setting it to 46bit or removing the entry");
+			throw cRuntimeError("The header length of the 802.11p standard is 46bit, please change your omnetpp.ini accordingly by either setting it to 46bit or removing the entry");
 		}
 		//erase the RadioStateAnalogueModel
 		analogueModels.erase(analogueModels.begin());
@@ -95,10 +97,14 @@ AnalogueModel* PhyLayer80211p::getAnalogueModelFromName(std::string name, Parame
 		return initializeNakagamiFading(params);
 	}
 	else if (name == "EnvironmentalDiffraction")
-    {
-	    if (world->use2D()) error("The EnvironmentalDiffraction model uses nodes' z-positions and only makes sense in a 3D environment. Refusing to work in a 2D world");
-        return initializeEnvironmentalDiffraction(params);
-    }
+	{
+		if (world->use2D()) error("The EnvironmentalDiffraction model uses nodes' z-positions and only makes sense in a 3D environment. Refusing to work in a 2D world");
+		return initializeEnvironmentalDiffraction(params);
+	}
+	else if (name == "FloorAttenuation")
+	{
+		return initializeFloorAttenuation(params);
+	}
 	return BasePhyLayer::getAnalogueModelFromName(name, params);
 }
 
@@ -145,7 +151,7 @@ AnalogueModel* PhyLayer80211p::initializeBreakpointPathlossModel(ParameterMap& p
 		// check whether alpha is not smaller than specified in ConnectionManager
 		if(cc->hasPar("alpha") && alpha1 < cc->par("alpha").doubleValue())
 		{
-	        // throw error
+			// throw error
 			throw cRuntimeError("TestPhyLayer::createPathLossModel(): alpha can't be smaller than specified in \
 	               ConnectionManager. Please adjust your config.xml file accordingly");
 		}
@@ -168,7 +174,7 @@ AnalogueModel* PhyLayer80211p::initializeBreakpointPathlossModel(ParameterMap& p
 		// check whether alpha is not smaller than specified in ConnectionManager
 		if(cc->hasPar("alpha") && alpha2 < cc->par("alpha").doubleValue())
 		{
-	        // throw error
+			// throw error
 			throw cRuntimeError("TestPhyLayer::createPathLossModel(): alpha can't be smaller than specified in \
 	               ConnectionManager. Please adjust your config.xml file accordingly");
 		}
@@ -258,7 +264,7 @@ AnalogueModel* PhyLayer80211p::initializeSimplePathlossModel(ParameterMap& param
 		// check whether alpha is not smaller than specified in ConnectionManager
 		if(cc->hasPar("alpha") && alpha < cc->par("alpha").doubleValue())
 		{
-	        // throw error
+			// throw error
 			throw cRuntimeError("TestPhyLayer::createPathLossModel(): alpha can't be smaller than specified in \
 	               ConnectionManager. Please adjust your config.xml file accordingly");
 		}
@@ -373,106 +379,147 @@ AnalogueModel* PhyLayer80211p::initializeSimpleObstacleShadowing(ParameterMap& p
 }
 
 namespace {
-    template<typename Out>
-    void split(const std::string &s, char delim, Out result) {
-        std::stringstream ss;
-        ss.str(s);
-        std::string item;
-        while (std::getline(ss, item, delim)) {
-            *(result++) = item;
-        }
-    }
+template<typename Out>
+	void split(const std::string &s, char delim, Out result) {
+		std::stringstream ss;
+		ss.str(s);
+		std::string item;
+		while (std::getline(ss, item, delim)) {
+			*(result++) = item;
+		}
+	}
 
-
-    std::vector<std::string> split(const std::string &s, char delim) {
-        std::vector<std::string> elems;
-        split(s, delim, std::back_inserter(elems));
-        return elems;
-    }
+	std::vector<std::string> split(const std::string &s, char delim) {
+		std::vector<std::string> elems;
+		split(s, delim, std::back_inserter(elems));
+		return elems;
+	}
 }
 
 AnalogueModel* PhyLayer80211p::initializeEnvironmentalDiffraction(ParameterMap& params) {
-    // init with default value
-    double carrierFrequency = 5.890e+9;
-    bool considerDEM = false;
-    bool considerVehicles = false;
+	// init with default value
+	double carrierFrequency = 5.890e+9;
+	bool considerDEM = false;
+	bool considerVehicles = false;
 
-    ParameterMap::iterator it;
+	ParameterMap::iterator it;
 
-    // get carrierFrequency from config
-    it = params.find("carrierFrequency");
+	// get carrierFrequency from config
+	it = params.find("carrierFrequency");
 
-    if ( it != params.end() ) // parameter carrierFrequency has been specified in config.xml
-    {
-        // set carrierFrequency
-        carrierFrequency = it->second.doubleValue();
-        coreEV << "initializeEnvironmentalDiffraction(): carrierFrequency set from config.xml to " << carrierFrequency << endl;
+	if ( it != params.end() ) // parameter carrierFrequency has been specified in config.xml
+	{
+		// set carrierFrequency
+		carrierFrequency = it->second.doubleValue();
+		coreEV << "initializeEnvironmentalDiffraction(): carrierFrequency set from config.xml to " << carrierFrequency << endl;
 
-        // check whether carrierFrequency is not smaller than specified in ConnectionManager
-        if(cc->hasPar("carrierFrequency") && carrierFrequency < cc->par("carrierFrequency").doubleValue())
-        {
-            // throw error
-            throw cRuntimeError("initializeEnvironmentalDiffraction(): carrierFrequency can't be smaller than specified in ConnectionManager. Please adjust your config.xml file accordingly");
-        }
-    }
-    else // carrierFrequency has not been specified in config.xml
-    {
-        if (cc->hasPar("carrierFrequency")) // parameter carrierFrequency has been specified in ConnectionManager
-        {
-            // set carrierFrequency according to ConnectionManager
-            carrierFrequency = cc->par("carrierFrequency").doubleValue();
-            coreEV << "initializeEnvironmentalDiffraction(): carrierFrequency set from ConnectionManager to " << carrierFrequency << endl;
-        }
-        else // carrierFrequency has not been specified in ConnectionManager
-        {
-            // keep carrierFrequency at default value
-            coreEV << "initializeEnvironmentalDiffraction(): carrierFrequency set from default value to " << carrierFrequency << endl;
-        }
-    }
+		// check whether carrierFrequency is not smaller than specified in ConnectionManager
+		if(cc->hasPar("carrierFrequency") && carrierFrequency < cc->par("carrierFrequency").doubleValue())
+		{
+			// throw error
+			throw cRuntimeError("initializeEnvironmentalDiffraction(): carrierFrequency can't be smaller than specified in ConnectionManager. Please adjust your config.xml file accordingly");
+		}
+	}
+	else // carrierFrequency has not been specified in config.xml
+	{
+		if (cc->hasPar("carrierFrequency")) // parameter carrierFrequency has been specified in ConnectionManager
+		{
+			// set carrierFrequency according to ConnectionManager
+			carrierFrequency = cc->par("carrierFrequency").doubleValue();
+			coreEV << "initializeEnvironmentalDiffraction(): carrierFrequency set from ConnectionManager to " << carrierFrequency << endl;
+		}
+		else // carrierFrequency has not been specified in ConnectionManager
+		{
+			// keep carrierFrequency at default value
+			coreEV << "initializeEnvironmentalDiffraction(): carrierFrequency set from default value to " << carrierFrequency << endl;
+		}
+	}
 
-    it = params.find("considerDEM");
-    std::vector<std::string> demFiles;
-    bool isRasterType;
-    double spacing;
-    double demCellSize;
-    if (it != params.end() && it->second.boolValue()) {
-        considerDEM = true;
-        it = params.find("demFiles");
-        if (it == params.end()) {
-            throw cRuntimeError("initializeEnvironmentalDiffraction(): No DEM file(s) provided in config.xml");
-        } else {
-            demFiles = split(it->second.stringValue(), ',');
-        }
-        it = params.find("isRasterType");
-        if (it == params.end()) {
-            throw cRuntimeError("initializeEnvironmentalDiffraction(): Not specified whether DEM is raster type or vector type (parameter isRasterType)");
-        } else {
-            isRasterType = it->second.boolValue();
-        }
-        it = params.find("spacing");
-        if (it == params.end()) {
-            throw cRuntimeError("initializeEnvironmentalDiffraction(): No spacing of distance between height profile points specified");
-        } else {
-            spacing = it->second.doubleValue();
-        }
-        it = params.find("demCellSize");
-        if (it == params.end()) {
-            demCellSize = 0.5;
-        } else {
-            demCellSize = it->second.doubleValue();
-        }
-    }
+	it = params.find("considerDEM");
+	std::vector<std::string> demFiles;
+	bool isRasterType;
+	double spacing;
+	double demCellSize;
+	if (it != params.end() && it->second.boolValue()) {
+		considerDEM = true;
+		it = params.find("demFiles");
+		if (it == params.end()) {
+			throw cRuntimeError("initializeEnvironmentalDiffraction(): No DEM file(s) provided in config.xml");
+		} else {
+			demFiles = split(it->second.stringValue(), ',');
+		}
+		it = params.find("isRasterType");
+		if (it == params.end()) {
+			throw cRuntimeError("initializeEnvironmentalDiffraction(): Not specified whether DEM is raster type or vector type (parameter isRasterType)");
+		} else {
+			isRasterType = it->second.boolValue();
+		}
+		it = params.find("spacing");
+		if (it == params.end()) {
+			throw cRuntimeError("initializeEnvironmentalDiffraction(): No spacing of distance between height profile points specified");
+		} else {
+			spacing = it->second.doubleValue();
+		}
+		it = params.find("demCellSize");
+		if (it == params.end()) {
+			demCellSize = 0.5;
+		} else {
+			demCellSize = it->second.doubleValue();
+		}
+	}
 
-    it = params.find("considerVehicles");
-    if (it != params.end() && it->second.boolValue()) {
-        considerVehicles = true;
-    }
+	it = params.find("considerVehicles");
+	if (it != params.end() && it->second.boolValue()) {
+		considerVehicles = true;
+	}
 
-    if (!considerDEM && !considerVehicles) {
-        throw cRuntimeError("initializeEnvironmentalDiffraction(): At least one of considerDEM and considerVehicles must be set to true");
-    }
+	if (!considerDEM && !considerVehicles) {
+		throw cRuntimeError("initializeEnvironmentalDiffraction(): At least one of considerDEM and considerVehicles must be set to true");
+	}
 
-    return new EnvironmentalDiffraction(carrierFrequency, considerDEM, demFiles, isRasterType, demCellSize, spacing, considerVehicles);
+	return new EnvironmentalDiffraction(carrierFrequency, considerDEM, demFiles, isRasterType, demCellSize, spacing, considerVehicles);
+}
+
+AnalogueModel* PhyLayer80211p::initializeFloorAttenuation(ParameterMap& params) {
+	// init with default value
+	double carrierFrequency = 5.890e+9;
+
+	ParameterMap::iterator it;
+
+	// get carrierFrequency from config
+	it = params.find("carrierFrequency");
+
+	if ( it != params.end() ) // parameter carrierFrequency has been specified in config.xml
+	{
+		// set carrierFrequency
+		carrierFrequency = it->second.doubleValue();
+		coreEV << "initializeFloorAttenuation(): carrierFrequency set from config.xml to " << carrierFrequency << endl;
+
+		// check whether carrierFrequency is not smaller than specified in ConnectionManager
+		if(cc->hasPar("carrierFrequency") && carrierFrequency < cc->par("carrierFrequency").doubleValue())
+		{
+			// throw error
+			throw cRuntimeError("initializeFloorAttenuation(): carrierFrequency can't be smaller than specified in ConnectionManager. Please adjust your config.xml file accordingly");
+		}
+	}
+	else // carrierFrequency has not been specified in config.xml
+	{
+		if (cc->hasPar("carrierFrequency")) // parameter carrierFrequency has been specified in ConnectionManager
+		{
+			// set carrierFrequency according to ConnectionManager
+			carrierFrequency = cc->par("carrierFrequency").doubleValue();
+			coreEV << "initializeFloorAttenuation(): carrierFrequency set from ConnectionManager to " << carrierFrequency << endl;
+		}
+		else // carrierFrequency has not been specified in ConnectionManager
+		{
+			// keep carrierFrequency at default value
+			coreEV << "initializeFloorAttenuation(): carrierFrequency set from default value to " << carrierFrequency << endl;
+		}
+	}
+
+	FloorControl* floorControlP = FloorControlAccess().getIfExists();
+	if (!floorControlP) throw cRuntimeError("initializeFloorAttenuation(): cannot find FloorControl module");
+	return new FloorAttenuation(*floorControlP, carrierFrequency);
 }
 
 Decider* PhyLayer80211p::initializeDecider80211p(ParameterMap& params) {
@@ -597,15 +644,15 @@ double PhyLayer80211p::getCCAThreshold() {
 }
 
 void PhyLayer80211p::notifyMacAboutRxStart(bool enable) {
-    ((Decider80211p *)decider)->setNotifyRxStart(enable);
+	((Decider80211p *)decider)->setNotifyRxStart(enable);
 }
 
 void PhyLayer80211p::requestChannelStatusIfIdle() {
-    Enter_Method_Silent();
-    Decider80211p* dec = (Decider80211p*)decider;
-    if (dec->cca(simTime(),NULL)) {
-        //chan is idle
-        DBG << "Request channel status: channel idle!\n";
-        dec->setChannelIdleStatus(true);
-    }
+	Enter_Method_Silent();
+	Decider80211p* dec = (Decider80211p*)decider;
+	if (dec->cca(simTime(),NULL)) {
+		//chan is idle
+		DBG << "Request channel status: channel idle!\n";
+		dec->setChannelIdleStatus(true);
+	}
 }

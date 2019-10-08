@@ -387,7 +387,15 @@ void AnnotationManager::show(const Annotation* annotation) {
 					cFigure::Color
 #endif
 					(p->color.c_str()));
+			figure->setFillColor(
+#if OMNETPP_VERSION < 0x500
+					cFigure::Color::byName
+#else
+					cFigure::Color
+#endif
+					(p->color.c_str()));
 			figure->setFilled(false);
+			//            figure->setFilled(true);
 			annotation->figure = figure;
 			annotationLayer->addFigure(annotation->figure);
 #else

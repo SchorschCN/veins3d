@@ -150,17 +150,23 @@ class PhyLayer80211p	: 	public BasePhyLayer,
 		 */
 		AnalogueModel* initializeTwoRayInterferenceModel(ParameterMap& params);
 
-        /**
-         * @brief Creates and initializes a NakagamiFading with the
-         * passed parameter values.
-         */
-        AnalogueModel* initializeNakagamiFading(ParameterMap& params);
+		/**
+		 * @brief Creates and initializes a NakagamiFading with the
+		 * passed parameter values.
+		 */
+		AnalogueModel* initializeNakagamiFading(ParameterMap& params);
 
-        /**
-         * @brief Creates and initializes an EnvironmentalDiffraction with the
-         * passed parameter values.
-         */
-        AnalogueModel* initializeEnvironmentalDiffraction(ParameterMap& params);
+		/**
+		 * @brief Creates and initializes an EnvironmentalDiffraction with the
+		 * passed parameter values.
+		 */
+		AnalogueModel* initializeEnvironmentalDiffraction(ParameterMap& params);
+
+		/**
+		 * @brief Creates and initializes a FloorAttenuation with the
+		 * passed parameter values.
+		 */
+		AnalogueModel* initializeFloorAttenuation(ParameterMap& params);
 
 		/**
 		 * @brief Creates and returns an instance of the Decider with the specified

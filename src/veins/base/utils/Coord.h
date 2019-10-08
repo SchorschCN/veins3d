@@ -49,7 +49,7 @@ public:
     /*@}*/
 
 private:
-  void copy(const Coord& other) { x = other.x; y = other.y; z = other.z; }
+    void copy(const Coord& other) { x = other.x; y = other.y; z = other.z; }
 
 public:
     /** @brief Default constructor. */
@@ -85,6 +85,15 @@ public:
     friend Coord operator*(const Coord& a, double f) {
         Coord tmp(a);
         tmp *= f;
+        return tmp;
+    }
+
+    /** @brief Cross product of two coordinate vectors. */
+    friend Coord operator*(const Coord& a, const Coord& b) {
+        Coord tmp;
+        tmp.x = a.y*b.z - a.z*b.y;
+        tmp.y = a.z*b.x - a.x*b.z;
+        tmp.z = a.x*b.y - a.y*b.x;
         return tmp;
     }
 
@@ -202,6 +211,14 @@ public:
     double length() const
     {
         return sqrt(squareLength());
+    }
+
+    void normalize()
+    {
+        double l = length();
+        x /= l;
+        y /= l;
+        z /= l;
     }
 
     /**

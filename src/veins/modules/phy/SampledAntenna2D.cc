@@ -130,7 +130,10 @@ double SampledAntenna2D::getGain(Coord ownPos, Coord ownOrient, Coord otherPos) 
     // calculate azimuth angle using scalar product
     double numerator = ownOrient.x*los.x + ownOrient.y*los.y;
     double denominator = sqrt(ownOrient.x*ownOrient.x + ownOrient.y*ownOrient.y)*sqrt(los.x*los.x + los.y*los.y);
-    double azimuth = acos(numerator/denominator)/M_PI*180.0;
+    double frac = numerator/denominator;
+    if (frac < -1.0) frac = -1.0;
+    if (frac > 1.0) frac = 1.0;
+    double azimuth = acos(frac)/M_PI*180.0;
     // check if angle is mathematically negative
     if (los.y*ownOrient.x - los.x*ownOrient.y < 0) {
         azimuth = 360 - azimuth;
