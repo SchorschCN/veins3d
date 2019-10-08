@@ -46,7 +46,9 @@ public:
      */
     virtual double getGain(Coord ownPos, Coord ownOrient, Coord otherPos);
 
-    virtual double getLastAngle(){return -1.0;};
+    virtual double getLastAzi(){return -1.0;};
+    virtual double getLastEle(){return -1.0;};
+
 };
 
 #endif /* ANTENNA_H_ */

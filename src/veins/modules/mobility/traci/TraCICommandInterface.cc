@@ -106,6 +106,14 @@ double TraCICommandInterface::Road::getMeanSpeed() {
 	return traci->genericGetDouble(CMD_GET_EDGE_VARIABLE, roadId, LAST_STEP_MEAN_SPEED, RESPONSE_GET_EDGE_VARIABLE);
 }
 
+std::string TraCICommandInterface::Road::getName() {
+    return traci->genericGetString(CMD_GET_EDGE_VARIABLE, roadId, VAR_NAME, RESPONSE_GET_EDGE_VARIABLE);
+}
+
+std::string TraCICommandInterface::Road::getType() {
+    return traci->genericGetString(CMD_GET_EDGE_VARIABLE, roadId, VAR_TYPE, RESPONSE_GET_EDGE_VARIABLE);
+}
+
 std::string TraCICommandInterface::Vehicle::getRoadId() {
 	return traci->genericGetString(CMD_GET_VEHICLE_VARIABLE, nodeId, VAR_ROAD_ID, RESPONSE_GET_VEHICLE_VARIABLE);
 }
@@ -499,6 +507,10 @@ double TraCICommandInterface::Lane::getLength() {
 	return traci->genericGetDouble(CMD_GET_LANE_VARIABLE, laneId, VAR_LENGTH, RESPONSE_GET_LANE_VARIABLE);
 }
 
+double TraCICommandInterface::Lane::getWidth() {
+    return traci->genericGetDouble(CMD_GET_LANE_VARIABLE, laneId, VAR_WIDTH, RESPONSE_GET_LANE_VARIABLE);
+}
+
 double TraCICommandInterface::Lane::getMaxSpeed() {
 	return traci->genericGetDouble(CMD_GET_LANE_VARIABLE, laneId, VAR_MAXSPEED, RESPONSE_GET_LANE_VARIABLE);
 }
@@ -513,6 +525,10 @@ std::list<std::string> TraCICommandInterface::getJunctionIds() {
 
 Coord TraCICommandInterface::Junction::getPosition() {
 	return traci->genericGetCoord(CMD_GET_JUNCTION_VARIABLE, junctionId, VAR_POSITION, RESPONSE_GET_JUNCTION_VARIABLE);
+}
+
+std::list<Coord> TraCICommandInterface::Junction::getShape() {
+    return traci->genericGetCoordList(CMD_GET_JUNCTION_VARIABLE, junctionId, VAR_SHAPE, RESPONSE_GET_JUNCTION_VARIABLE);
 }
 
 bool TraCICommandInterface::addVehicle(std::string vehicleId, std::string vehicleTypeId, std::string routeId, simtime_t emitTime_st, double emitPosition, double emitSpeed, int8_t emitLane) {
@@ -780,7 +796,8 @@ std::list<Coord> TraCICommandInterface::genericGetCoordList(uint8_t commandId, s
 	for (uint32_t i = 0; i < count; i++) {
 		double x; buf >> x;
 		double y; buf >> y;
-		res.push_back(connection.traci2omnet(TraCICoord(x, y)));
+		double z; buf >> z;
+		res.push_back(connection.traci2omnet(TraCICoord(x, y, z)));
 	}
 
 	ASSERT(buf.eof());

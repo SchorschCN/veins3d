@@ -110,6 +110,9 @@ class TraCICommandInterface
 
 				double getCurrentTravelTime();
 				double getMeanSpeed();
+				std::string getName();
+				std::string getType();
+
 
 			protected:
 				TraCICommandInterface* traci;
@@ -131,6 +134,7 @@ class TraCICommandInterface
 				std::list<Coord> getShape();
 				std::string getRoadId();
 				double getLength();
+				double getWidth();
 				double getMaxSpeed();
 				double getMeanSpeed();
 
@@ -226,6 +230,7 @@ class TraCICommandInterface
 				}
 
 				Coord getPosition();
+				std::list<Coord> getShape();
 
 			protected:
 				TraCICommandInterface* traci;
