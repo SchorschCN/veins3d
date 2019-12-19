@@ -29,6 +29,7 @@
 #include "veins/modules/phy/SNRThresholdDecider.h"
 #include "veins/modules/analogueModel/JakesFading.h"
 #include "veins/modules/analogueModel/EnvironmentalDiffraction.h"
+#include "veins/modules/analogueModel/NRayGroundInterference.h"
 #include "veins/base/connectionManager/BaseConnectionManager.h"
 #include "veins/modules/phy/Decider80211pToPhy80211pInterface.h"
 #include "veins/base/utils/Move.h"
@@ -161,6 +162,12 @@ class PhyLayer80211p	: 	public BasePhyLayer,
 		 * passed parameter values.
 		 */
 		AnalogueModel* initializeEnvironmentalDiffraction(ParameterMap& params);
+
+		/**
+		 * @brief Creates and initializes an NRayGroundInterference with the
+		 * passed parameter values.
+		 */
+		AnalogueModel* initializeNRayGroundInterference(ParameterMap& params);
 
 		/**
 		 * @brief Creates and initializes a FloorAttenuation with the

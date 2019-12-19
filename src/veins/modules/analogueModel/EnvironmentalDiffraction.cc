@@ -112,46 +112,6 @@ double EnvironmentalDiffraction::calcAttenuation(const Coord& senderPos, const C
                 }
             }
         }
-
-
-//        const std::map<std::string, cModule*>& managedHosts = traciManager->getManagedHosts();
-//        for (auto const& host : managedHosts)
-//        {
-//            cModule* mod = host.second;
-//            for (cModule::SubmoduleIterator iter(mod); !iter.end(); iter++) {
-//                cModule* submod = SUBMODULE_ITERATOR_TO_MODULE(iter);
-//                TraCIMobility* mm = dynamic_cast<TraCIMobility*>(submod);
-//                if (!mm) continue;
-//                else {
-//                    if (senderPos == mm->getCurrentPosition() || receiverPos == mm->getCurrentPosition()) break;
-//                    // check if this car is in LOS; if yes, add it to knife-edge map
-//                    double d, h;
-//                    std::tie(d, h) = isInLOS(mm->getRoadPosition(), mm->getCurrentOrientation(), senderPos, receiverPos);
-//                    if (d < 0) break;
-//
-//                    std::map<double, double>::iterator it = edgeMap.find(d);
-//                    if (it != edgeMap.end()) {
-//                        if (it->second < h) it->second = h;
-//                    } else edgeMap[d] = h;
-//
-//                    break;
-//                }
-//            }
-//        }
-//        // do the same with unequipped cars
-//        std::map<std::string, std::tuple<Coord, Coord, std::vector<GridCoord>>>& unequippedHosts = traciManager->getUnequippedHosts();
-//        for (auto const& host : unequippedHosts)
-//        {
-//            // check if this car is in LOS; if yes, add it to knife-edge map
-//            double d, h;
-//            std::tie(d, h) = isInLOS(std::get<0>(host.second), std::get<1>(host.second), senderPos, receiverPos);
-//            if (d < 0) continue;
-//
-//            std::map<double, double>::iterator it = edgeMap.find(d);
-//            if (it != edgeMap.end()) {
-//                if (it->second < h) it->second = h;
-//            } else edgeMap[d] = h;
-//        }
     }
 
     if (considerDEM) {

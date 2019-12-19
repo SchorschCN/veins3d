@@ -34,6 +34,8 @@ using Veins::AirFrame;
         <parameter name="isRasterType" type="bool" value="true"/>
         <!-- The spacing of queried height profile points of the terrain along the LOS -->
         <parameter name="spacing" type="double" value="1"/>
+        <!-- Cell size for the DEM cache (0 means caching is disabled) -->
+        <parameter name="demCellSize" type="double" value="0"/>
         <!-- States whether other vehicles should be considered -->
         <parameter name="considerVehicles" type="bool" value="true"/>
     </AnalogueModel>
@@ -72,15 +74,6 @@ private:
     /** @brief Number of columns in the DEM cache, depends on the playground size and grid granularity. **/
     static size_t cacheCols;
 
-
-    /**
-     * @brief calculates the attenuation due to environmental diffraction
-     *
-     * @param senderPos the sender's position
-     * @param receiverPos the receiver's position
-     * @return value of attenuation in linear units (non-dB)
-     */
-    double calcAttenuation(const Coord& senderPos, const Coord& receiverPos);
 
     /**
      * @brief checks if vehicle intersects the LOS
@@ -133,6 +126,7 @@ public:
      * @param considerDEM states whether the terrain characteristics should be considered
      * @param demFiles the filename(s) of the DEM
      * @param isRasterType whether the DEM is in raster format (GeoTiff)
+     * @param demCellSize cell size for the DEM cache
      * @param spacing the spacing of queried height profile points of the terrain along the LOS
      * @param considerVehicles states whether other vehicles should be considered
      */
@@ -146,6 +140,15 @@ public:
      * @param receiverPos the receiver's position
      */
     virtual void filterSignal(AirFrame* frame, const Coord& senderPos, const Coord& receiverPos);
+
+    /**
+     * @brief calculates the attenuation due to environmental diffraction
+     *
+     * @param senderPos the sender's position
+     * @param receiverPos the receiver's position
+     * @return value of attenuation in linear units (non-dB)
+     */
+    double calcAttenuation(const Coord& senderPos, const Coord& receiverPos);
 };
 
 #endif /* ENVIRONMENTALDIFFRACTION_H_ */

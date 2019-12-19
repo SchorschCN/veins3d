@@ -177,6 +177,13 @@ public:
     }
 
     /**
+     * @brief Returns the dot product with Coord 'a'.
+     */
+    double dot(const Coord& a) const {
+    	return this->x*a.x + this->y*a.y + this->z*a.z;
+    }
+
+    /**
      * @brief Returns the distance to Coord 'a'.
      */
     double distance(const Coord& a) const {
