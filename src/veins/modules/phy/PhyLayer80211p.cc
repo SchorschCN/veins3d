@@ -101,6 +101,11 @@ AnalogueModel* PhyLayer80211p::getAnalogueModelFromName(std::string name, Parame
 		if (world->use2D()) error("The EnvironmentalDiffraction model uses nodes' z-positions and only makes sense in a 3D environment. Refusing to work in a 2D world");
 		return initializeEnvironmentalDiffraction(params);
 	}
+	else if (name == "NRayGroundInterference")
+	{
+		if (world->use2D()) error("The NRayGroundInterference model uses nodes' z-positions and only makes sense in a 3D environment. Refusing to work in a 2D world");
+		return initializeNRayGroundInterference(params);
+	}
 	else if (name == "FloorAttenuation")
 	{
 		return initializeFloorAttenuation(params);
@@ -478,6 +483,82 @@ AnalogueModel* PhyLayer80211p::initializeEnvironmentalDiffraction(ParameterMap& 
 	}
 
 	return new EnvironmentalDiffraction(carrierFrequency, considerDEM, demFiles, isRasterType, demCellSize, spacing, considerVehicles);
+}
+
+AnalogueModel* PhyLayer80211p::initializeNRayGroundInterference(ParameterMap& params) {
+	// init with default value
+	double carrierFrequency = 5.890e+9;
+
+	ParameterMap::iterator it;
+
+	// get carrierFrequency from config
+	it = params.find("carrierFrequency");
+
+	if ( it != params.end() ) // parameter carrierFrequency has been specified in config.xml
+	{
+		// set carrierFrequency
+		carrierFrequency = it->second.doubleValue();
+		coreEV << "initializeNRayGroundInterference(): carrierFrequency set from config.xml to " << carrierFrequency << endl;
+
+		// check whether carrierFrequency is not smaller than specified in ConnectionManager
+		if(cc->hasPar("carrierFrequency") && carrierFrequency < cc->par("carrierFrequency").doubleValue())
+		{
+			// throw error
+			throw cRuntimeError("initializeNRayGroundInterference(): carrierFrequency can't be smaller than specified in ConnectionManager. Please adjust your config.xml file accordingly");
+		}
+	}
+	else // carrierFrequency has not been specified in config.xml
+	{
+		if (cc->hasPar("carrierFrequency")) // parameter carrierFrequency has been specified in ConnectionManager
+		{
+			// set carrierFrequency according to ConnectionManager
+			carrierFrequency = cc->par("carrierFrequency").doubleValue();
+			coreEV << "initializeNRayGroundInterference(): carrierFrequency set from ConnectionManager to " << carrierFrequency << endl;
+		}
+		else // carrierFrequency has not been specified in ConnectionManager
+		{
+			// keep carrierFrequency at default value
+			coreEV << "initializeNRayGroundInterference(): carrierFrequency set from default value to " << carrierFrequency << endl;
+		}
+	}
+
+	double epsilonR;
+	it = params.find("epsilonR");
+	if (it == params.end()) {
+		throw cRuntimeError("initializeNRayGroundInterference(): No epsilonR (relative permittivity of the ground) specified");
+	} else {
+		epsilonR = it->second.doubleValue();
+	}
+
+	std::vector<std::string> demFiles;
+	bool isRasterType;
+	double spacing;
+	it = params.find("demFiles");
+	if (it == params.end()) {
+		throw cRuntimeError("initializeNRayGroundInterference(): No DEM file(s) provided in config.xml");
+	} else {
+		demFiles = split(it->second.stringValue(), ',');
+	}
+	it = params.find("isRasterType");
+	if (it == params.end()) {
+		throw cRuntimeError("initializeNRayGroundInterference(): Not specified whether DEM is raster type or vector type (parameter isRasterType)");
+	} else {
+		isRasterType = it->second.boolValue();
+	}
+	it = params.find("spacing");
+	if (it == params.end()) {
+		throw cRuntimeError("initializeNRayGroundInterference(): No spacing of distance between height profile points specified");
+	} else {
+		spacing = it->second.doubleValue();
+	}
+	//		it = params.find("demCellSize");
+	//		if (it == params.end()) {
+	//			demCellSize = 0.5;
+	//		} else {
+	//			demCellSize = it->second.doubleValue();
+	//		}
+
+	return new NRayGroundInterference(carrierFrequency, epsilonR, demFiles, isRasterType, spacing);
 }
 
 AnalogueModel* PhyLayer80211p::initializeFloorAttenuation(ParameterMap& params) {
