@@ -170,6 +170,12 @@ class PhyLayer80211p	: 	public BasePhyLayer,
 		AnalogueModel* initializeNRayGroundInterference(ParameterMap& params);
 
 		/**
+		 * @brief Creates and initializes a DiffAndGround with the
+		 * passed parameter values.
+		 */
+		AnalogueModel* initializeDiffAndGround(ParameterMap& params);
+
+		/**
 		 * @brief Creates and initializes a FloorAttenuation with the
 		 * passed parameter values.
 		 */

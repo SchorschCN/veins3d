@@ -34,6 +34,7 @@
 #include "veins/modules/analogueModel/SimpleObstacleShadowing.h"
 #include "veins/modules/analogueModel/TwoRayInterferenceModel.h"
 #include "veins/modules/analogueModel/NakagamiFading.h"
+#include "veins/modules/analogueModel/DiffAndGround.h"
 #include <veins/modules/analogueModel/FloorAttenuation.h>
 #include <veins/modules/floor/FloorControl.h>
 #include "veins/base/connectionManager/BaseConnectionManager.h"
@@ -105,6 +106,10 @@ AnalogueModel* PhyLayer80211p::getAnalogueModelFromName(std::string name, Parame
 	{
 		if (world->use2D()) error("The NRayGroundInterference model uses nodes' z-positions and only makes sense in a 3D environment. Refusing to work in a 2D world");
 		return initializeNRayGroundInterference(params);
+	}
+	else if (name == "DiffAndGround") {
+		if (world->use2D()) error("The DiffAndGround model uses nodes' z-positions and only makes sense in a 3D environment. Refusing to work in a 2D world");
+		return initializeDiffAndGround(params);
 	}
 	else if (name == "FloorAttenuation")
 	{
@@ -559,6 +564,107 @@ AnalogueModel* PhyLayer80211p::initializeNRayGroundInterference(ParameterMap& pa
 	//		}
 
 	return new NRayGroundInterference(carrierFrequency, epsilonR, demFiles, isRasterType, spacing);
+}
+
+AnalogueModel* PhyLayer80211p::initializeDiffAndGround(ParameterMap& params) {
+	// init with default value
+	double carrierFrequency = 5.890e+9;
+	bool considerDEM = false;
+	bool considerVehicles = false;
+
+	ParameterMap::iterator it;
+
+	// get carrierFrequency from config
+	it = params.find("carrierFrequency");
+
+	if ( it != params.end() ) // parameter carrierFrequency has been specified in config.xml
+	{
+		// set carrierFrequency
+		carrierFrequency = it->second.doubleValue();
+		coreEV << "initializeDiffAndGround(): carrierFrequency set from config.xml to " << carrierFrequency << endl;
+
+		// check whether carrierFrequency is not smaller than specified in ConnectionManager
+		if(cc->hasPar("carrierFrequency") && carrierFrequency < cc->par("carrierFrequency").doubleValue())
+		{
+			// throw error
+			throw cRuntimeError("initializeDiffAndGround(): carrierFrequency can't be smaller than specified in ConnectionManager. Please adjust your config.xml file accordingly");
+		}
+	}
+	else // carrierFrequency has not been specified in config.xml
+	{
+		if (cc->hasPar("carrierFrequency")) // parameter carrierFrequency has been specified in ConnectionManager
+		{
+			// set carrierFrequency according to ConnectionManager
+			carrierFrequency = cc->par("carrierFrequency").doubleValue();
+			coreEV << "initializeDiffAndGround(): carrierFrequency set from ConnectionManager to " << carrierFrequency << endl;
+		}
+		else // carrierFrequency has not been specified in ConnectionManager
+		{
+			// keep carrierFrequency at default value
+			coreEV << "initializeDiffAndGround(): carrierFrequency set from default value to " << carrierFrequency << endl;
+		}
+	}
+
+	double epsilonR;
+	it = params.find("epsilonR");
+	if (it == params.end()) {
+		throw cRuntimeError("initializeDiffAndGround(): No epsilonR (relative permittivity of the ground) specified");
+	} else {
+		epsilonR = it->second.doubleValue();
+	}
+
+	std::vector<std::string> demFiles;
+	bool isRasterType;
+	double groundSpacing;
+	it = params.find("demFiles");
+	if (it == params.end()) {
+		throw cRuntimeError("initializeDiffAndGround(): No DEM file(s) provided in config.xml");
+	} else {
+		demFiles = split(it->second.stringValue(), ',');
+	}
+	it = params.find("isRasterType");
+	if (it == params.end()) {
+		throw cRuntimeError("initializeDiffAndGround(): Not specified whether DEM is raster type or vector type (parameter isRasterType)");
+	} else {
+		isRasterType = it->second.boolValue();
+	}
+	it = params.find("groundSpacing");
+	if (it == params.end()) {
+		throw cRuntimeError("initializeDiffAndGround(): No spacing of distance between nray height profile points specified");
+	} else {
+		groundSpacing = it->second.doubleValue();
+	}
+
+	it = params.find("considerDEM");
+	double diffSpacing;
+	double demCellSize;
+	if (it != params.end() && it->second.boolValue()) {
+		considerDEM = true;
+		it = params.find("diffSpacing");
+		if (it == params.end()) {
+			throw cRuntimeError("initializeDiffAndGround(): No spacing of distance between diff height profile points specified");
+		} else {
+			diffSpacing = it->second.doubleValue();
+		}
+		it = params.find("demCellSize");
+		if (it == params.end()) {
+			demCellSize = 0.5;
+		} else {
+			demCellSize = it->second.doubleValue();
+		}
+	}
+
+	it = params.find("considerVehicles");
+	if (it != params.end() && it->second.boolValue()) {
+		considerVehicles = true;
+	}
+
+	if (!considerDEM && !considerVehicles) {
+		throw cRuntimeError("initializeDiffAndGround(): At least one of considerDEM and considerVehicles must be set to true");
+	}
+
+
+	return new DiffAndGround(demFiles, isRasterType, carrierFrequency, epsilonR, groundSpacing, considerDEM, diffSpacing, demCellSize, considerVehicles);
 }
 
 AnalogueModel* PhyLayer80211p::initializeFloorAttenuation(ParameterMap& params) {

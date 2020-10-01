@@ -52,6 +52,15 @@ public:
 			bool isRasterType, double spacing);
 
 	/**
+	 * @brief Alternative constructor for cases in which the DEM has already been initialized.
+	 *
+	 * @param carrierFrequency the carrier frequency
+	 * @param epsilonR relative permittivity
+	 * @param spacing the spacing of queried height profile points of the terrain along the LOS
+	 */
+	NRayGroundInterference(double carrierFrequency, double epsilonR, double spacing);
+
+	/**
 	 * @brief Filters a specified AirFrame's Signal by adding the resulting attenuation.
 	 * @param frame the Airframe in question
 	 * @param senderPos the sender's position
