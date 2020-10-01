@@ -18,6 +18,16 @@ NRayGroundInterference::NRayGroundInterference(double carrierFrequency, double e
 	if (!hm.ready()) NBHeightMapper::loadHM(demFiles, isRasterType);
 }
 
+NRayGroundInterference::NRayGroundInterference(double carrierFrequency, double epsilonR, double spacing)
+{
+	this->carrierFrequency = carrierFrequency;
+	this->epsilonR = epsilonR;
+	this->spacing = spacing;
+
+	const NBHeightMapper& hm = NBHeightMapper::get();
+	if (!hm.ready()) throw cRuntimeError("No height map for n-ray model");
+}
+
 void NRayGroundInterference::filterSignal(AirFrame *frame, const Coord& senderPos, const Coord& receiverPos) {
 	Signal& s = frame->getSignal();
 

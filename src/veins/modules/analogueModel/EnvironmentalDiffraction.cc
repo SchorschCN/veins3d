@@ -48,6 +48,33 @@ EnvironmentalDiffraction::EnvironmentalDiffraction(double carrierFrequency, bool
     if (!hm.ready()) NBHeightMapper::loadHM(demFiles, isRasterType);
 }
 
+EnvironmentalDiffraction::EnvironmentalDiffraction(double carrierFrequency, bool considerDEM, double demCellSize, double spacing, bool considerVehicles){
+    this->wavelength = BaseWorldUtility::speedOfLight()/carrierFrequency;
+    this->spacing = spacing;
+    this->demCellSize = demCellSize;
+    this->considerVehicles = considerVehicles;
+    this->considerDEM = considerDEM;
+
+    if (!considerDEM) return;
+
+    // the DEM cache is shared by all EnvironmentalDiffraction objects and needs to be initialized once;
+    // if demCellSize equals 0, DEM caching is turned off
+    if (demCellSize != 0.0 && demCache == NULL) {
+        BaseWorldUtility* world = FindModule<BaseWorldUtility*>::findGlobalModule();
+        EnvironmentalDiffraction::pgs = world->getPgs();
+        // determine the size of the DEM cache based on the playground size and the grid granularity
+        EnvironmentalDiffraction::cacheCols = (size_t)ceil(pgs->x/demCellSize);
+        EnvironmentalDiffraction::cacheRows = (size_t)ceil(pgs->y/demCellSize);
+        int n = EnvironmentalDiffraction::cacheCols*EnvironmentalDiffraction::cacheRows;
+        // use 1D array for storage and initialize with NaN values
+        demCache = new double[n];
+        std::fill_n(demCache, n, std::numeric_limits<double>::quiet_NaN());
+    }
+
+    const NBHeightMapper& hm = NBHeightMapper::get();
+    if (!hm.ready()) throw cRuntimeError("No height map for environmental diffraction model");
+}
+
 void EnvironmentalDiffraction::filterSignal(AirFrame *frame, const Coord& senderPos, const Coord& receiverPos) {
     Signal& s = frame->getSignal();
 

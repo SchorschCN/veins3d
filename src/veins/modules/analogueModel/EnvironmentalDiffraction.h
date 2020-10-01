@@ -134,6 +134,18 @@ public:
             bool isRasterType, double demCellSize, double spacing, bool considerVehicles);
 
     /**
+     * @brief Alternative constructor for cases in which the DEM has already been initialized.
+     *
+     * @param carrierFrequency the carrier frequency
+     * @param considerDEM states whether the terrain characteristics should be considered
+     * @param demCellSize cell size for the DEM cache
+     * @param spacing the spacing of queried height profile points of the terrain along the LOS
+     * @param considerVehicles states whether other vehicles should be considered
+     */
+    EnvironmentalDiffraction(double carrierFrequency, bool considerDEM, double demCellSize, double spacing,
+            bool considerVehicles);
+
+    /**
      * @brief Filters a specified AirFrame's Signal by adding the resulting attenuation.
      * @param frame the Airframe in question
      * @param senderPos the sender's position
