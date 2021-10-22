@@ -9,8 +9,6 @@ FloorControl::FloorControl(): rTree(&FloorSegment::addSelf) {
 
 void FloorControl::initialize()
 {
-    addFromXml(par("floorDescr").xmlValue());
-
     annotations = Veins::AnnotationManagerAccess().getIfExists();
     randGen = new cNormal(this->getRNG(0), 0, par("stdDev").doubleValue());
 }
@@ -65,6 +63,11 @@ double FloorControl::getFactorByType(std::string type) {
     }
 }
 
+void FloorControl::addXmlSegments(Veins::TraCIConnection* tc) {
+    traciConn = tc;
+    addFromXml(par("floorDescr").xmlValue());
+}
+
 void FloorControl::addFromXml(cXMLElement* xml) {
     std::string rootTag = xml->getTagName();
     if (rootTag != "floors") {
@@ -105,7 +108,7 @@ void FloorControl::addFromXml(cXMLElement* xml) {
                 std::string xyz = st.nextToken();
                 std::vector<double> xyzVec = cStringTokenizer(xyz.c_str(), ",").asDoubleVector();
                 ASSERT(xyzVec.size() == 3);
-                sh.push_back(Coord(xyzVec[0], xyzVec[1], xyzVec[2]));
+                sh.push_back(traciConn->traci2omnet(Veins::TraCICoord(xyzVec[0], xyzVec[1], xyzVec[2])));
             }
             fs->setShape(sh);
             const double cmin[3] = {fs->getBboxP1().x, fs->getBboxP1().y, fs->getBboxP1().z};

@@ -130,13 +130,18 @@ double SampledAntenna2D::getGain(Coord ownPos, Coord ownOrient, Coord otherPos) 
     // calculate azimuth angle using scalar product
     double numerator = ownOrient.x*los.x + ownOrient.y*los.y;
     double denominator = sqrt(ownOrient.x*ownOrient.x + ownOrient.y*ownOrient.y)*sqrt(los.x*los.x + los.y*los.y);
-    double frac = numerator/denominator;
-    if (frac < -1.0) frac = -1.0;
-    if (frac > 1.0) frac = 1.0;
-    double azimuth = acos(frac)/M_PI*180.0;
-    // check if angle is mathematically negative
-    if (los.y*ownOrient.x - los.x*ownOrient.y < 0) {
-        azimuth = 360 - azimuth;
+    double azimuth = 0.0;
+    if (!FWMath::close(denominator, 0.0)) {
+        double frac = numerator / denominator;
+        if (frac < -1.0)
+            frac = -1.0;
+        if (frac > 1.0)
+            frac = 1.0;
+        azimuth = acos(frac) / M_PI * 180.0;
+        // check if angle is mathematically negative
+        if (los.y * ownOrient.x - los.x * ownOrient.y < 0) {
+            azimuth = 360 - azimuth;
+        }
     }
 
     // apply possible rotation and check if angle is still within [0, 360]
@@ -166,7 +171,7 @@ double SampledAntenna2D::getGain(Coord ownPos, Coord ownOrient, Coord otherPos) 
     if (elevation >= 270.0)
         elevation -= 360.0;
     else if (elevation > 90.0) {
-        elevation = 180 - elevation;
+        elevation = 180.0 - elevation;
         azimuth = 180.0 - azimuth;
         if (azimuth < 0.0)
             azimuth += 360.0;

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+<!-- Flow of vehicles with different times and probabilities to achieve a pseudo-random, preferably realistic distribution
+of vehicles across the garage levels. For this simulation scenario, the state beginning at t=17000s is considered. -->
+
+<vType id="type1" accel="2.6" decel="4.5" sigma="0.5" length="5" maxSpeed="70"/>
+    <flow id="f1" begin="0.00" color="yellow" from="roadE1" to="roadE2" end="3200.00" probability="0.04">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="entryA" duration="20000.00"/>
+    </flow>
+    <flow id="f2" begin="0.00" color="blue" from="roadE1" to="roadE2" end="2000.00" probability="0.04">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="entryA" duration="20000.00"/>
+    </flow>
+    <flow id="f3" begin="0.00" color="red" from="roadE1" to="roadE2" end="3500.00" probability="0.03">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="entryA" duration="20000.00"/>
+    </flow>
+    <flow id="f4" begin="0.00" color="orange" from="roadE1" to="roadE2" end="5900.00" probability="0.01">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="entryA" duration="20000.00"/>
+    </flow>
+    <flow id="f5" begin="0.00" color="green" from="roadE1" to="roadE2" end="5900.00" probability="0.04">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="entryA" duration="6200.00"/>
+    </flow>
+    
+    <flow id="f6" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.01">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="a0A" duration="60.00"/>
+    </flow>
+    <flow id="f7" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.01">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="b0A" duration="60.00"/>
+    </flow>
+    <flow id="f8" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.01">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="b1A" duration="60.00"/>
+    </flow>
+    <flow id="f9" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.0075">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="a1A" duration="60.00"/>
+    </flow>
+    <flow id="f10" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.0075">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="b2A" duration="60.00"/>
+    </flow>
+    <flow id="f11" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.005">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="a2A" duration="60.00"/>
+    </flow>
+    <flow id="f12" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.005">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="b3A" duration="60.00"/>
+    </flow>
+    <flow id="f13" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.005">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="a3A" duration="60.00"/>
+    </flow>
+    <flow id="f14" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.0025">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="b4A" duration="60.00"/>
+    </flow>
+    <flow id="f15" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.0025">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="a4A" duration="60.00"/>
+    </flow>
+    <flow id="f16" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.0025">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="b5A" duration="60.00"/>
+    </flow>
+    <flow id="f17" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.00125">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="a5A" duration="60.00"/>
+    </flow>
+    <flow id="f18" begin="15000.00" color="green" from="entryE_GRG" to="-entryE_GRG" end="20000.00" probability="0.00125">
+    	<param key="parking.probability.weight" value="1"/>
+    	<param key="parking.distanceto.weight" value="0"/>
+        <stop parkingArea="b6A" duration="60.00"/>
+    </flow>
+
+<!-- Single sender and receiver 
+	<vType id="myType" maxSpeed="3.55"/>
+	<trip id="v1" depart="0" from="b0E_GRG" to="b6E_GRG">
+		<stop lane="-a3E_GRG_0" endPos="14" duration="5.5"/>
+	</trip>
+	<vehicle id="v2" depart="0" departPos="12.8">
+		<route edges="b3E_GRG">
+			<stop lane="b3E_GRG_0" endPos="12.8" duration="1000000"/>
+		</route>
+	</vehicle>
+	-->
+</routes>
+

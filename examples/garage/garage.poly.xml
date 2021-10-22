@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+    <poly id="poly_0" color="red" type="building" fill="0" layer="128.00" shape="8.75,15.50 8.75,47.91 78.75,47.91 78.75,15.50 8.75,15.50"/>
+    <poly id="wall_0" color="orange" type="innerWall" fill="0" layer="128.00" shape="18.75,31.71 66.25,31.71"/>
+    <poly id="wall_1" color="orange" type="innerWall" fill="0" layer="128.00" shape="18.75,26.71 18.75,36.71"/>
+    <poly id="wall_2" color="orange" type="innerWall" fill="0" layer="128.00" shape="11.25,26.71 11.25,36.71"/>
+    <poly id="wall_3" color="orange" type="innerWall" fill="0" layer="128.00" shape="66.25,26.71 66.25,36.71"/>
+    <poly id="wall_4" color="orange" type="innerWall" fill="0" layer="128.00" shape="73.75,26.71 73.75,36.71"/>
+    <poly id="wall_5" color="orange" type="innerWall" fill="0" layer="128.00" shape="73.75,27.86 78.75,27.86"/>
+    <poly id="wall_6" color="orange" type="innerWall" fill="0" layer="128.00" shape="73.75,35.56 78.75,35.56"/>
+    <poly id="wall_7" color="orange" type="innerWall" fill="0" layer="128.00" shape="8.75,27.86 11.45,27.86"/>
+    <poly id="wall_8" color="orange" type="innerWall" fill="0" layer="128.00" shape="8.75,35.56 11.45,35.56"/>
+</additional>

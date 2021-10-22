@@ -54,15 +54,15 @@ private:
 public:
     /** @brief Default constructor. */
     Coord()
-        : x(0.0), y(0.0), z(0.0) {}
+	: x(0.0), y(0.0), z(0.0) {}
 
     /** @brief Initializes a coordinate. */
     Coord(double x, double y, double z = 0.0)
-        : x(x), y(y), z(z) {}
+    : x(x), y(y), z(z) {}
 
     /** @brief Initializes coordinate from other coordinate. */
     Coord(const Coord& other)
-        : cObject(other) { copy(other); }
+    : cObject(other) { copy(other); }
 
     /** @brief Returns a string with the value of the coordinate. */
     std::string info() const;
@@ -245,8 +245,8 @@ public:
      */
     Coord min(const Coord& a) {
         return Coord(this->x < a.x ? this->x : a.x,
-                     this->y < a.y ? this->y : a.y,
-                     this->z < a.z ? this->z : a.z);
+                this->y < a.y ? this->y : a.y,
+                        this->z < a.z ? this->z : a.z);
     }
 
     /**
@@ -254,8 +254,8 @@ public:
      */
     Coord max(const Coord& a) {
         return Coord(this->x > a.x ? this->x : a.x,
-                     this->y > a.y ? this->y : a.y,
-                     this->z > a.z ? this->z : a.z);
+                this->y > a.y ? this->y : a.y,
+                        this->z > a.z ? this->z : a.z);
     }
 };
 

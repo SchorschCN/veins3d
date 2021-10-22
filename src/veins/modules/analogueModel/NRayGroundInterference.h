@@ -15,6 +15,9 @@
  * Alexander Brummer, Lorenz Ammon and Anatoli Djanatliev, "N-Ray Ground Interference: Extending the
  * Two-Ray Interference Model for 3D Terrain Shapes," 11th IEEE Vehicular Networking Conference
  * (VNC 2019), Los Angeles, CA, USA, December 2019
+ * Alexander Brummer, Moritz Guetlein, Matthias Schaefer, Reinhard German and Anatoli Djanatliev,
+ * "Experimental Evaluation of the N-Ray Ground Interference Model," 12th IEEE Vehicular Networking
+ * Conference (VNC 2020), Ulm, Germany (Virtual Event), December 2020
  *
  * An example config.xml for this AnalogueModel can be the following:
  * @verbatim

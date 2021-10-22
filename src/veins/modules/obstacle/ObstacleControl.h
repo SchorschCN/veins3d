@@ -48,8 +48,8 @@ class ObstacleControl : public cSimpleModule
 
 		void addFromXml(cXMLElement* xml);
 		void addFromTypeAndShape(std::string id, std::string typeId, std::vector<Coord> shape);
-		void add(Obstacle obstacle);
-		void erase(const Obstacle* obstacle);
+		void add(Obstacle obstacle, bool inner = false);
+		void erase(const Obstacle* obstacle, bool inner = false);
 		bool isTypeSupported(std::string type);
 		double getAttenuationPerCut(std::string type);
 		double getAttenuationPerMeter(std::string type);
@@ -57,7 +57,7 @@ class ObstacleControl : public cSimpleModule
 		/**
 		 * calculate additional attenuation by obstacles, return signal strength
 		 */
-		double calculateAttenuation(const Coord& senderPos, const Coord& receiverPos) const;
+		double calculateAttenuation(const Coord& senderPos, const Coord& receiverPos, bool inner = false) /*const*/;
 
 	protected:
 		struct CacheKey {
@@ -93,6 +93,7 @@ class ObstacleControl : public cSimpleModule
 		cXMLElement* obstaclesXml; /**< obstacles to add at startup */
 
 		Obstacles obstacles;
+		Obstacles innerWalls;
 		AnnotationManager* annotations;
 		AnnotationManager::Group* annotationGroup;
 		std::map<std::string, double> perCut;

@@ -6,6 +6,7 @@
 #include "veins/base/utils/Coord.h"
 #include "veins/modules/floor/FloorSegment.h"
 #include "veins/modules/world/annotations/AnnotationManager.h"
+#include "veins/modules/mobility/traci/TraCIConnection.h"
 
 #define MY_RTREE_QUAL RTree<FloorSegment*, FloorSegment, double, 3, FloorSegment::Result>
 
@@ -26,6 +27,7 @@ public:
 	virtual void initialize();
 	virtual void handleMessage(cMessage *msg);
 	virtual void handleSelfMsg(cMessage *msg);
+	void addXmlSegments(Veins::TraCIConnection* tc);
 	void addLaneFromTypeAndShape(std::string id, std::string typeId, std::vector<Coord> shape, double laneWidth);
 	void addJunctionFromTypeAndShape(std::string id, std::string typeId, std::vector<Coord> shape);
 	double getFactorByType(std::string type);
@@ -33,6 +35,7 @@ public:
 
 protected:
 	Veins::AnnotationManager* annotations;
+	Veins::TraCIConnection* traciConn;
 	std::map<std::string, double> attFactors;
 	cNormal* randGen;
 

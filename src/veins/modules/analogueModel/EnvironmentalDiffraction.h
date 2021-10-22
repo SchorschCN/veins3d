@@ -4,8 +4,10 @@
 #include "veins/base/phyLayer/AnalogueModel.h"
 #include "veins/base/messages/AirFrame_m.h"
 #include "veins/modules/utility/NBHeightMapper.h"
+#include "veins/modules/mobility/traci/TraCIScenarioManager.h"
 
 using Veins::AirFrame;
+using Veins::TraCIScenarioManager;
 
 /**
  * @brief Implementation of an environmental diffraction model.
@@ -74,6 +76,15 @@ private:
     /** @brief Number of columns in the DEM cache, depends on the playground size and grid granularity. **/
     static size_t cacheCols;
 
+
+    /**
+     * @brief Queries the DEM to determine the elevation value at coordinate p.
+     *
+     * @param p cartesian coordinate at which the elevation value is requested
+     * @param traciManager pointer to the TraCIScenarioManager (required to convert the coordinate to lon/lat)
+     * @return the elevation value at coordinate p
+     */
+    double getElevation(const Coord& p, TraCIScenarioManager* traciManager) const;
 
     /**
      * @brief checks if vehicle intersects the LOS
@@ -156,11 +167,13 @@ public:
     /**
      * @brief calculates the attenuation due to environmental diffraction
      *
+     * @param frame the AirFrame for which the attenuation is calculated
      * @param senderPos the sender's position
      * @param receiverPos the receiver's position
+     * @param ignoreDEM whether to ignore the DEM for this particular attenuation calculation
      * @return value of attenuation in linear units (non-dB)
      */
-    double calcAttenuation(const Coord& senderPos, const Coord& receiverPos);
+    double calcAttenuation(AirFrame* frame, const Coord& senderPos, const Coord& receiverPos, bool ignoreDEM = false);
 };
 
 #endif /* ENVIRONMENTALDIFFRACTION_H_ */

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<nodes version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/nodes_file.xsd">
+    <location netOffset="0.00,0.00" convBoundary="3.00,10.00,90.00,39.81" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
+
+    <node id="a0N1_GRG" x="70.00" y="23.60" z="1.38" type="priority" radius="0.00"/>
+    <node id="a0N2_GRG" x="15.00" y="23.60" z="1.38" type="priority" radius="0.00"/>
+    <node id="a1N1_GRG" x="70.00" y="23.60" z="4.13" type="priority" radius="0.00"/>
+    <node id="a1N2_GRG" x="15.00" y="23.60" z="4.13" type="priority" radius="0.00"/>
+    <node id="a2N1_GRG" x="70.00" y="23.60" z="6.88" type="priority" radius="0.00"/>
+    <node id="a2N2_GRG" x="15.00" y="23.60" z="6.88" type="priority" radius="0.00"/>
+    <node id="a3N1_GRG" x="70.00" y="23.60" z="9.63" type="priority" radius="0.00"/>
+    <node id="a3N2_GRG" x="15.00" y="23.60" z="9.63" type="priority" radius="0.00"/>
+    <node id="a4N1_GRG" x="70.00" y="23.60" z="12.38" type="priority" radius="0.00"/>
+    <node id="a4N2_GRG" x="15.00" y="23.60" z="12.38" type="priority" radius="0.00"/>
+    <node id="a5N1_GRG" x="70.00" y="23.60" z="15.13" type="priority" radius="0.00"/>
+    <node id="a5N2_GRG" x="15.00" y="23.60" z="15.13" type="priority" radius="0.00"/>
+    <node id="b0N1_GRG" x="70.00" y="39.81" type="priority" radius="0.00"/>
+    <node id="b0N2_GRG" x="15.00" y="39.81" type="priority" radius="0.00"/>
+    <node id="b1N1_GRG" x="70.00" y="39.81" z="2.75" type="priority" radius="0.00"/>
+    <node id="b1N2_GRG" x="15.00" y="39.81" z="2.75" type="priority" radius="0.00"/>
+    <node id="b2N1_GRG" x="70.00" y="39.81" z="5.50" type="priority" radius="0.00"/>
+    <node id="b2N2_GRG" x="15.00" y="39.81" z="5.50" type="priority" radius="0.00"/>
+    <node id="b3N1_GRG" x="70.00" y="39.81" z="8.25" type="priority" radius="0.00"/>
+    <node id="b3N2_GRG" x="15.00" y="39.81" z="8.25" type="priority" radius="0.00"/>
+    <node id="b4N1_GRG" x="70.00" y="39.81" z="11.00" type="priority" radius="0.00"/>
+    <node id="b4N2_GRG" x="15.00" y="39.81" z="11.00" type="priority" radius="0.00"/>
+    <node id="b5N1_GRG" x="70.00" y="39.81" z="13.75" type="priority" radius="0.00"/>
+    <node id="b5N2_GRG" x="15.00" y="39.81" z="13.75" type="priority" radius="0.00"/>
+    <node id="b6N1_GRG" x="70.00" y="39.81" z="16.50" type="priority" radius="0.00"/>
+    <node id="b6N2_GRG" x="15.00" y="39.81" z="16.50" type="priority" radius="0.00"/>
+    <node id="destN" x="90.00" y="7.00" z="1.38" type="priority"/>
+    <node id="entryN" x="70.00" y="7.00" z="1.38" type="priority" radius="0.50"/>
+    <node id="srcN" x="5.00" y="7.00" z="1.38" type="priority"/>
+</nodes>

@@ -181,6 +181,14 @@ class PhyLayer80211p	: 	public BasePhyLayer,
 		 */
 		AnalogueModel* initializeFloorAttenuation(ParameterMap& params);
 
+		AnalogueModel* initializeRiceRayleighFading(ParameterMap& params);
+
+		AnalogueModel* initializeGarageModels(ParameterMap& params);
+
+		AnalogueModel* initializeModelSelector(ParameterMap& params);
+
+		double getCarrierFrequency(ParameterMap& params, std::string caller, double defaultFreq = 5.890e+9);
+
 		/**
 		 * @brief Creates and returns an instance of the Decider with the specified
 		 * name.

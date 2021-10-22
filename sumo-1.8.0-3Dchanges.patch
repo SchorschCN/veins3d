@@ -1,0 +1,465 @@
+diff -Naru sumo18fresh/sumo-1.8.0/src/guisim/GUIParkingArea.cpp sumo-1.8.0/src/guisim/GUIParkingArea.cpp
+--- sumo18fresh/sumo-1.8.0/src/guisim/GUIParkingArea.cpp	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/guisim/GUIParkingArea.cpp	2021-02-26 18:22:07.756527844 +0100
+@@ -202,8 +202,9 @@
+ 
+ void
+ GUIParkingArea::addLotEntry(double x, double y, double z,
+-                            double width, double length, double angle) {
+-    MSParkingArea::addLotEntry(x, y, z, width, length, angle);
++                            double width, double length,
++                            double angle, double slope) {
++    MSParkingArea::addLotEntry(x, y, z, width, length, angle, slope);
+     Boundary b;
+     b.add(Position(x, y));
+     b.grow(MAX2(width, length) + 5);
+diff -Naru sumo18fresh/sumo-1.8.0/src/guisim/GUIParkingArea.h sumo-1.8.0/src/guisim/GUIParkingArea.h
+--- sumo18fresh/sumo-1.8.0/src/guisim/GUIParkingArea.h	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/guisim/GUIParkingArea.h	2021-02-26 18:18:36.980530221 +0100
+@@ -121,7 +121,8 @@
+ 
+     /// @brief extend boundary
+     void addLotEntry(double x, double y, double z,
+-                     double width, double length, double angle);
++                     double width, double length,
++                     double angle, double slope);
+ 
+     /** @brief Draws the object
+      * @param[in] s The settings for the current view (may influence drawing)
+diff -Naru sumo18fresh/sumo-1.8.0/src/libsumo/Edge.cpp sumo-1.8.0/src/libsumo/Edge.cpp
+--- sumo18fresh/sumo-1.8.0/src/libsumo/Edge.cpp	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/libsumo/Edge.cpp	2021-02-26 10:48:09.440835042 +0100
+@@ -267,6 +267,12 @@
+ }
+ 
+ 
++std::string
++Edge::getEdgeType(const std::string& id) {
++    return getEdge(id)->getEdgeType();
++}
++
++
+ LIBSUMO_GET_PARAMETER_WITH_KEY_IMPLEMENTATION(Edge)
+ 
+ 
+@@ -388,7 +394,9 @@
+             return wrapper->wrapInt(objID, variable, getLaneNumber(objID));
+         case VAR_NAME:
+             return wrapper->wrapString(objID, variable, getStreetName(objID));
+-        default:
++        case VAR_TYPE:
++            return wrapper->wrapString(objID, variable, getEdgeType(objID));
++	default:
+             return false;
+     }
+ }
+diff -Naru sumo18fresh/sumo-1.8.0/src/libsumo/Edge.h sumo-1.8.0/src/libsumo/Edge.h
+--- sumo18fresh/sumo-1.8.0/src/libsumo/Edge.h	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/libsumo/Edge.h	2021-02-26 10:48:42.480834670 +0100
+@@ -71,6 +71,7 @@
+     static double getLastStepLength(const std::string& edgeID);
+     static int getLaneNumber(const std::string& edgeID);
+     static std::string getStreetName(const std::string& edgeID);
++    static std::string getEdgeType(const std::string& id);
+ 
+     LIBSUMO_ID_PARAMETER_API
+     LIBSUMO_SUBSCRIPTION_API
+diff -Naru sumo18fresh/sumo-1.8.0/src/libsumo/Helper.h sumo-1.8.0/src/libsumo/Helper.h
+--- sumo18fresh/sumo-1.8.0/src/libsumo/Helper.h	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/libsumo/Helper.h	2021-02-26 10:49:24.680834194 +0100
+@@ -123,7 +123,7 @@
+ 
+     /// @brief helper functions
+     static TraCIPositionVector makeTraCIPositionVector(const PositionVector& positionVector);
+-    static TraCIPosition makeTraCIPosition(const Position& position, const bool includeZ = false);
++    static TraCIPosition makeTraCIPosition(const Position& position, const bool includeZ = true);
+     static Position makePosition(const TraCIPosition& position);
+ 
+     static PositionVector makePositionVector(const TraCIPositionVector& vector);
+diff -Naru sumo18fresh/sumo-1.8.0/src/libsumo/Vehicle.cpp sumo-1.8.0/src/libsumo/Vehicle.cpp
+--- sumo18fresh/sumo-1.8.0/src/libsumo/Vehicle.cpp	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/libsumo/Vehicle.cpp	2021-03-03 18:19:44.943596386 +0100
+@@ -157,7 +157,7 @@
+ double
+ Vehicle::getSlope(const std::string& vehicleID) {
+     MSBaseVehicle* veh = Helper::getVehicle(vehicleID);
+-    return veh->isOnRoad() ? veh->getSlope() : INVALID_DOUBLE_VALUE;
++    return (veh->isOnRoad() || veh->isParking()) ? veh->getSlope() : INVALID_DOUBLE_VALUE;
+ }
+ 
+ 
+diff -Naru sumo18fresh/sumo-1.8.0/src/microsim/MSParkingArea.cpp sumo-1.8.0/src/microsim/MSParkingArea.cpp
+--- sumo18fresh/sumo-1.8.0/src/microsim/MSParkingArea.cpp	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/microsim/MSParkingArea.cpp	2021-03-05 17:00:40.015363940 +0100
+@@ -113,17 +113,22 @@
+ 
+         addLotEntry(pos.x(), pos.y(), pos.z(),
+                     myWidth, myLength,
+-                    ((double) atan2((s.x() - f.x()), (f.y() - s.y())) * (double) 180.0 / (double) M_PI) + myAngle);
++                    ((double) atan2((s.x() - f.x()), (f.y() - s.y())) * (double) 180.0 / (double) M_PI) + myAngle,
++                    (double) asin((f.z() - s.z()) / spaceDim) * (double) 180.0 / (double) M_PI);
+         mySpaceOccupancies.back().myEndPos = myBegPos + MAX2(POSITION_EPS, spaceDim * (i + 1));
+     }
+     computeLastFreePos();
+ }
+ 
++
+ MSParkingArea::~MSParkingArea() {}
+ 
++
+ void
+ MSParkingArea::addLotEntry(double x, double y, double z,
+-                           double width, double length, double angle) {
++                           double width, double length,
++                           double angle, double slope) {
++    // create LotSpaceDefinition
+     LotSpaceDefinition lsd;
+     lsd.index = (int)mySpaceOccupancies.size();
+     lsd.vehicle = nullptr;
+@@ -131,10 +136,11 @@
+     lsd.myWidth = width;
+     lsd.myLength = length;
+     lsd.myRotation = angle;
++    lsd.mySlope = slope;
+     // If we are modelling parking set the end position to the lot position relative to the lane
+-    //   rather than the end of the parking area - this results in vehicles stopping nearer the space
+-    //   and re-entering the lane nearer the space. (If we are not modelling parking the vehicle will usually
+-    //    enter the space and re-enter at the end of the parking area.)
++    // rather than the end of the parking area - this results in vehicles stopping nearer the space
++    // and re-entering the lane nearer the space. (If we are not modelling parking the vehicle will usually
++    // enter the space and re-enter at the end of the parking area.)
+     if (MSGlobals::gModelParkingManoeuver) {
+         const double offset = this->getLane().getShape().nearest_offset_to_point2D(lsd.myPosition);
+         if (offset <  getBeginLanePosition()) {
+@@ -166,8 +172,6 @@
+         lsd.myManoeuverAngle = int(angle); // unused unless gModelParkingManoeuver is true
+         lsd.mySideIsLHS = true;
+     }
+-
+-
+     mySpaceOccupancies.push_back(lsd);
+     myCapacity++;
+     computeLastFreePos();
+@@ -242,6 +246,16 @@
+         }
+     }
+     return 0;
++}
++
++double
++MSParkingArea::getVehicleSlope(const SUMOVehicle& forVehicle) const {
++    for (const auto& lsd : mySpaceOccupancies) {
++        if (lsd.vehicle == &forVehicle) {
++            return lsd.mySlope;
++        }
++    }
++    return 0;
+ }
+ 
+ double
+diff -Naru sumo18fresh/sumo-1.8.0/src/microsim/MSParkingArea.h sumo-1.8.0/src/microsim/MSParkingArea.h
+--- sumo18fresh/sumo-1.8.0/src/microsim/MSParkingArea.h	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/microsim/MSParkingArea.h	2021-03-05 10:06:52.112933996 +0100
+@@ -183,6 +183,12 @@
+      */
+     double getVehicleAngle(const SUMOVehicle& forVehicle) const;
+ 
++    /** @brief Returns the slope of parked vehicle
++     *
++     * @return The slope of parked vehicle
++     */
++    double getVehicleSlope(const SUMOVehicle& forVehicle) const;
++
+     /** @brief Return the angle of myLastFreeLot - the next parking lot
+      *         only expected to be called after we have established there is space in the parking area
+      *
+@@ -217,10 +223,12 @@
+      * @param[in] width Width of the lot rectangle
+      * @param[in] length Length of the lot rectangle
+      * @param[in] angle Angle of the lot rectangle
++     * @param[in] slope Slope of the lot rectangle
+      * @return Whether the lot entry could be added
+      */
+     virtual void addLotEntry(double x, double y, double z,
+-                             double width, double length, double angle);
++                             double width, double length,
++                             double angle, double slope);
+ 
+ 
+     /** @brief Returns the lot rectangle width
+@@ -269,6 +277,8 @@
+         Position myPosition;
+         /// @brief The rotation
+         double myRotation;
++        /// @brief The slope
++        double mySlope;
+         /// @brief The width
+         double myWidth;
+         /// @brief The length
+diff -Naru sumo18fresh/sumo-1.8.0/src/microsim/MSVehicle.cpp sumo-1.8.0/src/microsim/MSVehicle.cpp
+--- sumo18fresh/sumo-1.8.0/src/microsim/MSVehicle.cpp	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/microsim/MSVehicle.cpp	2021-03-03 18:25:13.303533331 +0100
+@@ -1109,6 +1109,9 @@
+ // ------------ Other getter methods
+ double
+ MSVehicle::getSlope() const {
++    if (!isOnRoad() && isParking() && getStops().begin()->parkingarea != nullptr) {
++        return getStops().begin()->parkingarea->getVehicleSlope(*this);
++    }
+     if (myLane == nullptr) {
+         return 0;
+     }
+diff -Naru sumo18fresh/sumo-1.8.0/src/netbuild/NBHeightMapper.cpp sumo-1.8.0/src/netbuild/NBHeightMapper.cpp
+--- sumo18fresh/sumo-1.8.0/src/netbuild/NBHeightMapper.cpp	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/netbuild/NBHeightMapper.cpp	2021-02-26 10:53:32.864831395 +0100
+@@ -83,7 +83,7 @@
+     }
+     for (auto& item : myRasters) {
+         const Boundary& boundary = item.first;
+-        int16_t* raster = item.second;
++        float* raster = item.second;
+         double result = -1e6;
+         if (boundary.around(geo)) {
+             const int xSize = int((boundary.xmax() - boundary.xmin()) / mySizeOfPixel.x() + .5);
+@@ -294,21 +294,21 @@
+         return 0;
+     }
+     const int picSize = xSize * ySize;
+-    int16_t* raster = (int16_t*)CPLMalloc(sizeof(int16_t) * picSize);
++    float* raster = (float*)CPLMalloc(sizeof(float) * picSize);
+     for (int i = 1; i <= poDataset->GetRasterCount(); i++) {
+         GDALRasterBand* poBand = poDataset->GetRasterBand(i);
+-        if (poBand->GetColorInterpretation() != GCI_GrayIndex) {
++        /*if (poBand->GetColorInterpretation() != GCI_GrayIndex) {
+             WRITE_ERROR("Unknown color band in " + file + ".");
+             clearData();
+             break;
+-        }
+-        if (poBand->GetRasterDataType() != GDT_Int16) {
++        }*/
++        if (poBand->GetRasterDataType() != GDT_Float32) {
+             WRITE_ERROR("Unknown data type in " + file + ".");
+             clearData();
+             break;
+         }
+         assert(xSize == poBand->GetXSize() && ySize == poBand->GetYSize());
+-        if (poBand->RasterIO(GF_Read, 0, 0, xSize, ySize, raster, xSize, ySize, GDT_Int16, 0, 0) == CE_Failure) {
++        if (poBand->RasterIO(GF_Read, 0, 0, xSize, ySize, raster, xSize, ySize, GDT_Float32, 0, 0) == CE_Failure) {
+             WRITE_ERROR("Failure in reading " + file + ".");
+             clearData();
+             break;
+diff -Naru sumo18fresh/sumo-1.8.0/src/netbuild/NBHeightMapper.h sumo-1.8.0/src/netbuild/NBHeightMapper.h
+--- sumo18fresh/sumo-1.8.0/src/netbuild/NBHeightMapper.h	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/netbuild/NBHeightMapper.h	2021-02-26 10:54:02.952831055 +0100
+@@ -131,7 +131,7 @@
+     TRIANGLE_RTREE_QUAL myRTree;
+ 
+     /// @brief raster height information in m for all loaded files
+-    std::vector<std::pair<Boundary, int16_t*> > myRasters;
++    std::vector<std::pair<Boundary, float*> > myRasters;
+ 
+     /// @brief dimensions of one pixel in raster data
+     Position mySizeOfPixel;
+diff -Naru sumo18fresh/sumo-1.8.0/src/netedit/elements/additional/GNEAdditionalHandler.cpp sumo-1.8.0/src/netedit/elements/additional/GNEAdditionalHandler.cpp
+--- sumo18fresh/sumo-1.8.0/src/netedit/elements/additional/GNEAdditionalHandler.cpp	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/netedit/elements/additional/GNEAdditionalHandler.cpp	2021-03-04 18:07:53.186615726 +0100
+@@ -353,8 +353,8 @@
+ 
+ 
+ GNEAdditional*
+-GNEAdditionalHandler::buildParkingSpace(GNENet* net, bool allowUndoRedo, GNEAdditional* parkingAreaParent, Position pos, double width, double length, double angle, bool blockMovement) {
+-    GNEAdditional* parkingSpace = new GNEParkingSpace(net, parkingAreaParent, pos, width, length, angle, blockMovement);
++GNEAdditionalHandler::buildParkingSpace(GNENet* net, bool allowUndoRedo, GNEAdditional* parkingAreaParent, Position pos, double width, double length, double angle, double slope, bool blockMovement) {
++    GNEAdditional* parkingSpace = new GNEParkingSpace(net, parkingAreaParent, pos, width, length, angle, slope, blockMovement);
+     if (allowUndoRedo) {
+         net->getViewNet()->getUndoList()->p_begin("add " + toString(SUMO_TAG_PARKING_SPACE));
+         net->getViewNet()->getUndoList()->add(new GNEChange_Additional(parkingSpace, true), true);
+@@ -2038,6 +2038,7 @@
+     double width = GNEAttributeCarrier::parseAttributeFromXML<double>(attrs, "", SUMO_TAG_PARKING_SPACE, SUMO_ATTR_WIDTH, abort);
+     double length = GNEAttributeCarrier::parseAttributeFromXML<double>(attrs, "", SUMO_TAG_PARKING_SPACE, SUMO_ATTR_LENGTH, abort);
+     double angle = GNEAttributeCarrier::parseAttributeFromXML<double>(attrs, "", SUMO_TAG_PARKING_SPACE, SUMO_ATTR_ANGLE, abort);
++    double slope = GNEAttributeCarrier::parseAttributeFromXML<double>(attrs, "", SUMO_TAG_PARKING_SPACE, SUMO_ATTR_SLOPE, abort);
+     // parse Netedit attributes
+     bool blockMovement = false;
+     if (attrs.hasAttribute(GNE_ATTR_BLOCK_MOVEMENT)) {
+@@ -2057,7 +2058,7 @@
+         // check that Parking Area Parent exists
+         if (parkingAreaParent != nullptr) {
+             // save ID of last created element
+-            GNEAdditional* additionalCreated = buildParkingSpace(net, allowUndoRedo, parkingAreaParent, pos, width, length, angle, blockMovement);
++            GNEAdditional* additionalCreated = buildParkingSpace(net, allowUndoRedo, parkingAreaParent, pos, width, length, angle, slope, blockMovement);
+             // check if insertion has to be commited
+             if (insertedAdditionals) {
+                 insertedAdditionals->commitAdditionalInsertion(additionalCreated);
+diff -Naru sumo18fresh/sumo-1.8.0/src/netedit/elements/additional/GNEAdditionalHandler.h sumo-1.8.0/src/netedit/elements/additional/GNEAdditionalHandler.h
+--- sumo18fresh/sumo-1.8.0/src/netedit/elements/additional/GNEAdditionalHandler.h	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/netedit/elements/additional/GNEAdditionalHandler.h	2021-03-05 17:50:53.884277224 +0100
+@@ -250,11 +250,12 @@
+      * @param[in] width ParkingArea's width
+      * @param[in] length ParkingArea's length
+      * @param[in] angle ParkingArea's angle
++     * @param[in] slope ParkingArea's slope (of this space)
+      * @param[in] blockMovemet enable or disable block movement
+      * @return true if was sucesfully created, false in other case
+      * @exception InvalidArgument If the charging Station can not be added to the net (is duplicate)
+      */
+-    static GNEAdditional* buildParkingSpace(GNENet* net, bool allowUndoRedo, GNEAdditional* parkingAreaParent, Position pos, double width, double length, double angle, bool blockMovement);
++    static GNEAdditional* buildParkingSpace(GNENet* net, bool allowUndoRedo, GNEAdditional* parkingAreaParent, Position pos, double width, double length, double angle, double slope, bool blockMovement);
+ 
+     /**@brief Builds a induction loop detector (E1)
+      * @param[in] net net in which element will be inserted
+diff -Naru sumo18fresh/sumo-1.8.0/src/netedit/elements/additional/GNEParkingSpace.cpp sumo-1.8.0/src/netedit/elements/additional/GNEParkingSpace.cpp
+--- sumo18fresh/sumo-1.8.0/src/netedit/elements/additional/GNEParkingSpace.cpp	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/netedit/elements/additional/GNEParkingSpace.cpp	2021-03-05 13:26:14.735979265 +0100
+@@ -31,13 +31,14 @@
+ // method definitions
+ // ===========================================================================
+ 
+-GNEParkingSpace::GNEParkingSpace(GNENet* net, GNEAdditional* parkingAreaParent, const Position& pos, double width, double length, double angle, bool blockMovement) :
++GNEParkingSpace::GNEParkingSpace(GNENet* net, GNEAdditional* parkingAreaParent, const Position& pos, double width, double length, double angle, double slope, bool blockMovement) :
+     GNEAdditional(net, GLO_PARKING_SPACE, SUMO_TAG_PARKING_SPACE, "", blockMovement,
+ {}, {}, {}, {parkingAreaParent}, {}, {}, {}, {}),
+ myPosition(pos),
+ myWidth(width),
+ myLength(length),
+-myAngle(angle) {
++myAngle(angle),
++mySlope(slope) {
+     // update centering boundary without updating grid
+     updateCenteringBoundary(false);
+ }
+@@ -171,6 +172,8 @@
+             return toString(myLength);
+         case SUMO_ATTR_ANGLE:
+             return toString(myAngle);
++        case SUMO_ATTR_SLOPE:
++            return toString(mySlope);
+         case GNE_ATTR_BLOCK_MOVEMENT:
+             return toString(myBlockMovement);
+         case GNE_ATTR_PARENT:
+@@ -201,6 +204,7 @@
+         case SUMO_ATTR_WIDTH:
+         case SUMO_ATTR_LENGTH:
+         case SUMO_ATTR_ANGLE:
++        case SUMO_ATTR_SLOPE:
+         case GNE_ATTR_BLOCK_MOVEMENT:
+         case GNE_ATTR_PARENT:
+         case GNE_ATTR_SELECTED:
+@@ -224,6 +228,8 @@
+             return canParse<double>(value) && (parse<double>(value) > 0);
+         case SUMO_ATTR_ANGLE:
+             return canParse<double>(value);
++        case SUMO_ATTR_SLOPE:
++            return canParse<double>(value);
+         case GNE_ATTR_BLOCK_MOVEMENT:
+             return canParse<bool>(value);
+         case GNE_ATTR_PARENT:
+@@ -282,6 +288,11 @@
+             // update boundary
+             updateCenteringBoundary(true);
+             break;
++        case SUMO_ATTR_SLOPE:
++            mySlope = parse<double>(value);
++            // update boundary
++            updateCenteringBoundary(true);
++            break;
+         case GNE_ATTR_BLOCK_MOVEMENT:
+             myBlockMovement = parse<bool>(value);
+             break;
+diff -Naru sumo18fresh/sumo-1.8.0/src/netedit/elements/additional/GNEParkingSpace.h sumo-1.8.0/src/netedit/elements/additional/GNEParkingSpace.h
+--- sumo18fresh/sumo-1.8.0/src/netedit/elements/additional/GNEParkingSpace.h	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/netedit/elements/additional/GNEParkingSpace.h	2021-03-05 17:55:57.219601000 +0100
+@@ -43,9 +43,10 @@
+      * @param[in] width ParkingArea's width
+      * @param[in] length ParkingArea's length
+      * @param[in] angle ParkingArea's angle
++     * @param[in] slope ParkingArea's slope (of this space)
+      * @param[in] block movement enable or disable additional movement
+      */
+-    GNEParkingSpace(GNENet* net, GNEAdditional* parkingAreaParent, const Position& pos, double width, double length, double angle, bool blockMovement);
++    GNEParkingSpace(GNENet* net, GNEAdditional* parkingAreaParent, const Position& pos, double width, double length, double angle, double slope, bool blockMovement);
+ 
+     /// @brief Destructor
+     ~GNEParkingSpace();
+@@ -133,6 +134,9 @@
+     /// @brief Angle of Parking Space
+     double myAngle;
+ 
++    /// @brief Slope of Parking Space
++    double mySlope;
++
+ private:
+     /// @brief set attribute after validation
+     void setAttribute(SumoXMLAttr key, const std::string& value);
+diff -Naru sumo18fresh/sumo-1.8.0/src/netedit/elements/GNEAttributeCarrier.cpp sumo-1.8.0/src/netedit/elements/GNEAttributeCarrier.cpp
+--- sumo18fresh/sumo-1.8.0/src/netedit/elements/GNEAttributeCarrier.cpp	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/netedit/elements/GNEAttributeCarrier.cpp	2021-03-04 17:26:51.738643486 +0100
+@@ -1600,6 +1600,12 @@
+                                               "0.00");
+         myTagProperties[currentTag].addAttribute(attrProperty);
+ 
++        attrProperty = GNEAttributeProperties(SUMO_ATTR_SLOPE,
++                                              GNEAttributeProperties::FLOAT | GNEAttributeProperties::ANGLE | GNEAttributeProperties::DEFAULTVALUESTATIC | GNEAttributeProperties::XMLOPTIONAL | GNEAttributeProperties::UPDATEGEOMETRY,
++                                              "The slope of the road-side parking spaces",
++                                              "0.00");
++        myTagProperties[currentTag].addAttribute(attrProperty);
++
+     }
+     currentTag = SUMO_TAG_E1DETECTOR;
+     {
+diff -Naru sumo18fresh/sumo-1.8.0/src/netload/NLTriggerBuilder.cpp sumo-1.8.0/src/netload/NLTriggerBuilder.cpp
+--- sumo18fresh/sumo-1.8.0/src/netload/NLTriggerBuilder.cpp	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/netload/NLTriggerBuilder.cpp	2021-02-26 18:05:04.128539389 +0100
+@@ -579,8 +579,9 @@
+     double width = attrs.getOpt<double>(SUMO_ATTR_WIDTH, "", ok, myParkingArea->getWidth());
+     double length = attrs.getOpt<double>(SUMO_ATTR_LENGTH, "", ok, myParkingArea->getLength());
+     double angle = attrs.getOpt<double>(SUMO_ATTR_ANGLE, "", ok, myParkingArea->getAngle());
++    double slope = attrs.getOpt<double>(SUMO_ATTR_SLOPE, "", ok, 0.);
+     // add the lot entry
+-    addLotEntry(x, y, z, width, length, angle);
++    addLotEntry(x, y, z, width, length, angle, slope);
+ }
+ 
+ 
+@@ -771,10 +772,11 @@
+ 
+ void
+ NLTriggerBuilder::addLotEntry(double x, double y, double z,
+-                              double width, double length, double angle) {
++                              double width, double length,
++                              double angle, double slope) {
+     if (myParkingArea != nullptr) {
+         if (!myParkingArea->parkOnRoad()) {
+-            myParkingArea->addLotEntry(x, y, z, width, length, angle);
++            myParkingArea->addLotEntry(x, y, z, width, length, angle, slope);
+         } else {
+             throw InvalidArgument("Cannot not add lot entry to on-road parking area.");
+         }
+diff -Naru sumo18fresh/sumo-1.8.0/src/netload/NLTriggerBuilder.h sumo-1.8.0/src/netload/NLTriggerBuilder.h
+--- sumo18fresh/sumo-1.8.0/src/netload/NLTriggerBuilder.h	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/netload/NLTriggerBuilder.h	2021-02-26 18:12:02.964534665 +0100
+@@ -164,10 +164,12 @@
+      * @param[in] width Width of the lot rectangle
+      * @param[in] length Length of the lot rectangle
+      * @param[in] angle Angle of the lot rectangle
++     * @param[in] slope Slope of the lot rectangle
+      * @exception InvalidArgument If the current parking area is 0
+      */
+     void addLotEntry(double x, double y, double z,
+-                     double width, double length, double angle);
++                     double width, double length,
++                     double angle, double slope);
+ 
+ 
+ 
+diff -Naru sumo18fresh/sumo-1.8.0/src/traci-server/TraCIServer.cpp sumo-1.8.0/src/traci-server/TraCIServer.cpp
+--- sumo18fresh/sumo-1.8.0/src/traci-server/TraCIServer.cpp	2020-12-01 22:21:17.000000000 +0100
++++ sumo-1.8.0/src/traci-server/TraCIServer.cpp	2021-02-26 10:56:21.172829496 +0100
+@@ -1434,6 +1434,7 @@
+     for (const libsumo::TraCIPosition& pos : shape) {
+         outputStorage.writeDouble(pos.x);
+         outputStorage.writeDouble(pos.y);
++	outputStorage.writeDouble(pos.z);
+     }
+ }
+ 

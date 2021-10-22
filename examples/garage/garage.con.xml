@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<connections version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/connections_file.xsd">
+    <connection from="-a0E_GRG" to="-entryE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-a0E_GRG" to="a0b1rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-a0E_GRG" to="a0E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-a0b0rampE_GRG" to="-a0E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="-a0b1rampE_GRG" to="a0E_GRG" fromLane="0" toLane="0"/>
+    <connection from="-a0b1rampE_GRG" to="-entryE_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-a1E_GRG" to="a1b2rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-a1E_GRG" to="a1E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-a1b1rampE_GRG" to="-a1E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="-a1b2rampE_GRG" to="a1E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="-a2E_GRG" to="a2b3rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-a2E_GRG" to="a2E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-a2b2rampE_GRG" to="-a2E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="-a2b3rampE_GRG" to="a2E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="-a3E_GRG" to="a3b4rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-a3E_GRG" to="a3E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-a3b3rampE_GRG" to="-a3E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="-a3b4rampE_GRG" to="a3E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="-a4E_GRG" to="a4b5rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-a4E_GRG" to="a4E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-a4b4rampE_GRG" to="-a4E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="-a4b5rampE_GRG" to="a4E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="-a5E_GRG" to="a5b6rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-a5E_GRG" to="a5E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-a5b5rampE_GRG" to="-a5E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="-a5b6rampE_GRG" to="a5E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="-b0E_GRG" to="b0E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-b1E_GRG" to="-a0b1rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-b1E_GRG" to="b1E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-b2E_GRG" to="-a1b2rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-b2E_GRG" to="b2E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-b3E_GRG" to="-a2b3rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-b3E_GRG" to="b3E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-b4E_GRG" to="-a3b4rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-b4E_GRG" to="b4E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-b5E_GRG" to="-a4b5rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-b5E_GRG" to="b5E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-b6E_GRG" to="-a5b6rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-b6E_GRG" to="b6E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="-entryE_GRG" to="-roadE1" fromLane="0" toLane="0"/>
+    <connection from="-entryE_GRG" to="roadE2" fromLane="0" toLane="0"/>
+
+    <connection from="-roadE1" to="roadE1" fromLane="0" toLane="0"/>
+
+    <connection from="-roadE2" to="entryE_GRG" fromLane="0" toLane="0"/>
+    <connection from="-roadE2" to="-roadE1" fromLane="0" toLane="0"/>
+
+    <connection from="a0E_GRG" to="a0b0rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="a0E_GRG" to="-a0E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="a0b0rampE_GRG" to="-b0E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="a0b1rampE_GRG" to="b1E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="a1E_GRG" to="a1b1rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="a1E_GRG" to="-a1E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="a1b1rampE_GRG" to="-b1E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="a1b2rampE_GRG" to="b2E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="a2E_GRG" to="a2b2rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="a2E_GRG" to="-a2E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="a2b2rampE_GRG" to="-b2E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="a2b3rampE_GRG" to="b3E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="a3E_GRG" to="a3b3rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="a3E_GRG" to="-a3E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="a3b3rampE_GRG" to="-b3E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="a3b4rampE_GRG" to="b4E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="a4E_GRG" to="a4b4rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="a4E_GRG" to="-a4E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="a4b4rampE_GRG" to="-b4E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="a4b5rampE_GRG" to="b5E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="a5E_GRG" to="a5b5rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="a5E_GRG" to="-a5E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="a5b5rampE_GRG" to="-b5E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="a5b6rampE_GRG" to="b6E_GRG" fromLane="0" toLane="0" keepClear="1"/>
+
+    <connection from="b0E_GRG" to="-a0b0rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="b0E_GRG" to="-b0E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="b1E_GRG" to="-a1b1rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="b1E_GRG" to="-b1E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="b2E_GRG" to="-a2b2rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="b2E_GRG" to="-b2E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="b3E_GRG" to="-a3b3rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="b3E_GRG" to="-b3E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="b4E_GRG" to="-a4b4rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="b4E_GRG" to="-b4E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="b5E_GRG" to="-a5b5rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="b5E_GRG" to="-b5E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="b6E_GRG" to="-b6E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="entryE_GRG" to="-entryE_GRG" fromLane="0" toLane="0"/>
+    <connection from="entryE_GRG" to="a0b1rampE_GRG" fromLane="0" toLane="0"/>
+    <connection from="entryE_GRG" to="a0E_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="roadE1" to="roadE2" fromLane="0" toLane="0"/>
+    <connection from="roadE1" to="entryE_GRG" fromLane="0" toLane="0"/>
+
+    <connection from="roadE2" to="-roadE2" fromLane="0" toLane="0"/>
+
+</connections>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<edges version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/edges_file.xsd">
+    <edge id="-a0E_GRG" from="a0N2_GRG" to="a0N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="-a0b0rampE_GRG" from="b0N2_GRG" to="a0N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="-a0b1rampE_GRG" from="b1N1_GRG" to="a0N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="-a1E_GRG" from="a1N2_GRG" to="a1N1_GRG" priority="-1" numLanes="1" speed="3.22" width="3.10"/>
+    <edge id="-a1b1rampE_GRG" from="b1N2_GRG" to="a1N2_GRG" priority="-1" numLanes="1" speed="3.22" width="3.75"/>
+    <edge id="-a1b2rampE_GRG" from="b2N1_GRG" to="a1N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="-a2E_GRG" from="a2N2_GRG" to="a2N1_GRG" priority="-1" numLanes="1" speed="3.59" width="3.10">
+    	<neigh lane="a2E_GRG_0"/>
+    </edge>
+    <edge id="-a2b2rampE_GRG" from="b2N2_GRG" to="a2N2_GRG" priority="-1" numLanes="1" speed="3.59" width="3.75"/>
+    <edge id="-a2b3rampE_GRG" from="b3N1_GRG" to="a2N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="-a3E_GRG" from="a3N2_GRG" to="a3N1_GRG" priority="-1" numLanes="1" speed="3.22" width="3.10">
+    	<neigh lane="a3E_GRG_0"/>
+    </edge>
+    <edge id="-a3b3rampE_GRG" from="b3N2_GRG" to="a3N2_GRG" priority="-1" numLanes="1" speed="3.22" width="3.75"/>
+    <edge id="-a3b4rampE_GRG" from="b4N1_GRG" to="a3N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="-a4E_GRG" from="a4N2_GRG" to="a4N1_GRG" priority="-1" numLanes="1" speed="3.56" width="3.10"/>
+    <edge id="-a4b4rampE_GRG" from="b4N2_GRG" to="a4N2_GRG" priority="-1" numLanes="1" speed="3.56" width="3.75"/>
+    <edge id="-a4b5rampE_GRG" from="b5N1_GRG" to="a4N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="-a5E_GRG" from="a5N2_GRG" to="a5N1_GRG" priority="-1" numLanes="1" speed="3.49" width="3.10"/>
+    <edge id="-a5b5rampE_GRG" from="b5N2_GRG" to="a5N2_GRG" priority="-1" numLanes="1" speed="3.49" width="3.75"/>
+    <edge id="-a5b6rampE_GRG" from="b6N1_GRG" to="a5N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="-b0E_GRG" from="b0N2_GRG" to="b0N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="-b1E_GRG" from="b1N2_GRG" to="b1N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="-b2E_GRG" from="b2N2_GRG" to="b2N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="-b3E_GRG" from="b3N2_GRG" to="b3N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10">
+    	<neigh lane="b3E_GRG_0"/>
+    </edge>
+    <edge id="-b4E_GRG" from="b4N2_GRG" to="b4N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="-b5E_GRG" from="b5N2_GRG" to="b5N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="-b6E_GRG" from="b6N2_GRG" to="b6N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="-entryE_GRG" from="a0N1_GRG" to="entryN" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="-roadE1" from="entryN" to="srcN" priority="1" numLanes="1" speed="13.89" width="3.75"/>
+    <edge id="-roadE2" from="destN" to="entryN" priority="1" numLanes="1" speed="13.89" width="3.75"/>
+    <edge id="a0E_GRG" from="a0N1_GRG" to="a0N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="a0b0rampE_GRG" from="a0N2_GRG" to="b0N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="a0b1rampE_GRG" from="a0N1_GRG" to="b1N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="a1E_GRG" from="a1N1_GRG" to="a1N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="a1b1rampE_GRG" from="a1N2_GRG" to="b1N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="a1b2rampE_GRG" from="a1N1_GRG" to="b2N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="a2E_GRG" from="a2N1_GRG" to="a2N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10">
+    	<neigh lane="-a2E_GRG_0"/>
+    </edge>
+    <edge id="a2b2rampE_GRG" from="a2N2_GRG" to="b2N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="a2b3rampE_GRG" from="a2N1_GRG" to="b3N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="a3E_GRG" from="a3N1_GRG" to="a3N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10">
+    	<neigh lane="-a3E_GRG_0"/>
+    </edge>
+    <edge id="a3b3rampE_GRG" from="a3N2_GRG" to="b3N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="a3b4rampE_GRG" from="a3N1_GRG" to="b4N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="a4E_GRG" from="a4N1_GRG" to="a4N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="a4b4rampE_GRG" from="a4N2_GRG" to="b4N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="a4b5rampE_GRG" from="a4N1_GRG" to="b5N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="a5E_GRG" from="a5N1_GRG" to="a5N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="a5b5rampE_GRG" from="a5N2_GRG" to="b5N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="a5b6rampE_GRG" from="a5N1_GRG" to="b6N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="b0E_GRG" from="b0N1_GRG" to="b0N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="b1E_GRG" from="b1N1_GRG" to="b1N2_GRG" priority="-1" numLanes="1" speed="3.22" width="3.10"/>
+    <edge id="b2E_GRG" from="b2N1_GRG" to="b2N2_GRG" priority="-1" numLanes="1" speed="3.59" width="3.10"/>
+    <edge id="b3E_GRG" from="b3N1_GRG" to="b3N2_GRG" priority="-1" numLanes="1" speed="3.22" width="3.10">
+    	<neigh lane="-b3E_GRG_0"/>
+    </edge>
+    <edge id="b4E_GRG" from="b4N1_GRG" to="b4N2_GRG" priority="-1" numLanes="1" speed="3.56" width="3.10"/>
+    <edge id="b5E_GRG" from="b5N1_GRG" to="b5N2_GRG" priority="-1" numLanes="1" speed="3.49" width="3.10"/>
+    <edge id="b6E_GRG" from="b6N1_GRG" to="b6N2_GRG" priority="-1" numLanes="1" speed="3.35" width="3.10"/>
+    <edge id="entryE_GRG" from="entryN" to="a0N1_GRG" priority="-1" numLanes="1" speed="3.35" width="3.75"/>
+    <edge id="roadE1" from="srcN" to="entryN" priority="1" numLanes="1" speed="13.89" width="3.75"/>
+    <edge id="roadE2" from="entryN" to="destN" priority="1" numLanes="1" speed="13.89" width="3.75"/>
+</edges>

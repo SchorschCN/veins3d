@@ -18,7 +18,7 @@ DiffAndGround::DiffAndGround(std::vector<std::string> demFiles, bool isRasterTyp
 void DiffAndGround::filterSignal(AirFrame *frame, const Coord& senderPos, const Coord& receiverPos) {
 	Signal& s = frame->getSignal();
 
-	double factor = diffModel->calcAttenuation(senderPos, receiverPos);
+	double factor = diffModel->calcAttenuation(frame, senderPos, receiverPos);
 	if (!FWMath::close(factor, 1.0)) {
 		// if diffraction model does not return 1.0, LOS is obstructed => use this attenuation plus simple path loss
 		double dist = (receiverPos - senderPos).length();

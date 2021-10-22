@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<launch>
+	<copy file="garage.net.xml" />
+	<copy file="garage.rou.xml" />
+	<copy file="garage.poly.xml" />
+	<copy file="garage_parking.add.xml" />
+	<copy file="garage.sumocfg" type="config" />
+</launch>
+

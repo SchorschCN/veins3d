@@ -3,6 +3,7 @@
 #include "veins/modules/mobility/traci/TraCIScenarioManager.h"
 #include "veins/modules/mobility/traci/TraCIMobility.h"
 #include "veins/modules/mobility/traci/TraCICommandInterface.h"
+#include "veins/base/connectionManager/ChannelAccess.h"
 
 #define WIDTH 1.8 // assumed vehicle width
 #define LENGTH 4.5 // assumed vehicle length
@@ -78,7 +79,7 @@ EnvironmentalDiffraction::EnvironmentalDiffraction(double carrierFrequency, bool
 void EnvironmentalDiffraction::filterSignal(AirFrame *frame, const Coord& senderPos, const Coord& receiverPos) {
     Signal& s = frame->getSignal();
 
-    double factor = calcAttenuation(senderPos, receiverPos);
+    double factor = calcAttenuation(frame, senderPos, receiverPos);
     EV << "Attenuation by environmental diffraction is: " << factor << endl;
 
     bool hasFrequency = s.getTransmissionPower()->getDimensionSet().hasDimension(Dimension::frequency());
@@ -87,7 +88,7 @@ void EnvironmentalDiffraction::filterSignal(AirFrame *frame, const Coord& sender
     s.addAttenuation(attMapping);
 }
 
-double EnvironmentalDiffraction::calcAttenuation(const Coord& senderPos, const Coord& receiverPos) {
+double EnvironmentalDiffraction::calcAttenuation(AirFrame *frame, const Coord& senderPos, const Coord& receiverPos, bool ignoreDEM) {
     std::map<double, double> edgeMap;
 
     Coord los = receiverPos - senderPos;
@@ -109,6 +110,13 @@ double EnvironmentalDiffraction::calcAttenuation(const Coord& senderPos, const C
         Coord bboxP1 = Coord(std::min(senderPos.x, receiverPos.x), std::min(senderPos.y, receiverPos.y));
         Coord bboxP2 = Coord(std::max(senderPos.x, receiverPos.x), std::max(senderPos.y, receiverPos.y));
 
+        ChannelMobilityPtrType senderMob =
+                dynamic_cast<ChannelAccess* const >(frame->getSenderModule())->getMobilityModule();
+        TraCIMobility* senderTraci = dynamic_cast<TraCIMobility*> (senderMob);
+        ChannelMobilityPtrType receiverMob =
+                dynamic_cast<ChannelAccess* const >(frame->getArrivalModule())->getMobilityModule();
+        TraCIMobility* receiverTraci = dynamic_cast<TraCIMobility*> (receiverMob);
+
         double css = traciManager->carCellSize;
         size_t fromRow = 0, toRow = 0, fromCol = 0, toCol = 0;
         if (css != 0.0) {
@@ -124,9 +132,10 @@ double EnvironmentalDiffraction::calcAttenuation(const Coord& senderPos, const C
                 if (col >= traciManager->carGridCols) break;
                 const std::map<std::string, HostPos*> cell = hostsGrid[row*traciManager->carGridCols + col];
                 for (auto const& host : cell) {
+                    if (host.first == senderTraci->getExternalId() || host.first == receiverTraci->getExternalId())
+                        continue;
                     const Coord& pos = std::get<0>(*(host.second));
                     const Coord& orient = std::get<1>(*(host.second));
-                    if (senderPos == pos || receiverPos == pos) continue;
                     // check if this car is in LOS; if yes, add it to knife-edge map
                     double d, h;
                     std::tie(d, h) = isInLOS(pos, orient, senderPos, receiverPos);
@@ -141,40 +150,12 @@ double EnvironmentalDiffraction::calcAttenuation(const Coord& senderPos, const C
         }
     }
 
-    if (considerDEM) {
-        // open DEM, read equidistant points along LOS (dependent on spacing) and add them to knife-edge map
-        TraCICommandInterface* traciCI = traciManager->getCommandInterface();
-        const NBHeightMapper& hm = NBHeightMapper::get();
-        if (!hm.ready()) throw cRuntimeError("No height map for environmental diffraction model");
+    if (!ignoreDEM && considerDEM) {
+        // read equidistant points along LOS (dependent on spacing) and add them to knife-edge map
         for (double d = spacing; d < dLos; d += spacing) {
             if (edgeMap.find(d) != edgeMap.end()) continue; //if we already have a car at this distance, continue
             const Coord p = senderPos + los*d;
-            // demCellSize of 0 means no DEM caching
-            if (demCellSize == 0.0) {
-            // get the height value by querying the DEM
-                double lon, lat;
-                std::tie(lon, lat) = traciCI->getLonLat(p);
-                edgeMap[d] = hm.getZ(Position(lon, lat));
-            } else {
-                // determine the position in the DEM cache for coordinate p
-                size_t x = (size_t)(p.x/demCellSize);
-                size_t y = (size_t)(p.y/demCellSize);
-                // if this height value has not been determined yet, compute it now
-                if (std::isnan(EnvironmentalDiffraction::demCache[y*EnvironmentalDiffraction::cacheCols + x])) {
-                    // determine the coordinates of the center of the required grid cell
-                    double cellCenterX, cellCenterY;
-                    if (x < EnvironmentalDiffraction::cacheCols - 1) cellCenterX = (0.5 + x)*demCellSize;
-                    else cellCenterX = (EnvironmentalDiffraction::pgs->x + x*demCellSize)/2;
-                    if (y < EnvironmentalDiffraction::cacheRows - 1) cellCenterY = (0.5 + y)*demCellSize;
-                    else cellCenterY = (EnvironmentalDiffraction::pgs->y + y*demCellSize)/2;
-                    // get the height value by querying the DEM
-                    double lon, lat;
-                    std::tie(lon, lat) = traciCI->getLonLat(Coord(cellCenterX, cellCenterY));
-                    demCache[y*EnvironmentalDiffraction::cacheCols + x] = hm.getZ(Position(lon, lat));
-                }
-                // return the height value as stored in the DEM cache
-                edgeMap[d] = demCache[y*EnvironmentalDiffraction::cacheCols + x];
-            }
+            edgeMap[d] = getElevation(p, traciManager);
         }
     }
     // now apply multiple knife-edge model
@@ -206,6 +187,46 @@ double EnvironmentalDiffraction::calcAttenuation(const Coord& senderPos, const C
     return FWMath::dBm2mW(-L);
 }
 
+inline double EnvironmentalDiffraction::getElevation(const Coord& p, TraCIScenarioManager* traciManager) const
+{
+    TraCICommandInterface* traciCI = traciManager->getCommandInterface();
+    const NBHeightMapper& hm = NBHeightMapper::get();
+    if (!hm.ready())
+        throw cRuntimeError("No height map for environmental diffraction model");
+
+    // demCellSize of 0 means no DEM caching
+    if (demCellSize == 0.0) {
+        // get the height value by querying the DEM
+        double lon, lat;
+        std::tie(lon, lat) = traciCI->getLonLat(p);
+        return hm.getZ(Position(lon, lat));
+    }
+    else {
+        // determine the position in the DEM cache for coordinate p
+        size_t x = (size_t) (p.x / demCellSize);
+        size_t y = (size_t) (p.y / demCellSize);
+        // if this height value has not been determined yet, compute it now
+        if (std::isnan(EnvironmentalDiffraction::demCache[y * EnvironmentalDiffraction::cacheCols + x])) {
+            // determine the coordinates of the center of the required grid cell
+            double cellCenterX, cellCenterY;
+            if (x < EnvironmentalDiffraction::cacheCols - 1)
+                cellCenterX = (0.5 + x) * demCellSize;
+            else
+                cellCenterX = (EnvironmentalDiffraction::pgs->x + x * demCellSize) / 2;
+            if (y < EnvironmentalDiffraction::cacheRows - 1)
+                cellCenterY = (0.5 + y) * demCellSize;
+            else
+                cellCenterY = (EnvironmentalDiffraction::pgs->y + y * demCellSize) / 2;
+            // get the height value by querying the DEM
+            double lon, lat;
+            std::tie(lon, lat) = traciCI->getLonLat(Coord(cellCenterX, cellCenterY));
+            demCache[y * EnvironmentalDiffraction::cacheCols + x] = hm.getZ(Position(lon, lat));
+        }
+        // return the height value as stored in the DEM cache
+        return demCache[y * EnvironmentalDiffraction::cacheCols + x];
+    }
+}
+
 std::pair<double, double> EnvironmentalDiffraction::isInLOS(const Coord& pos, const Coord& orient, const Coord& senderPos, const Coord& receiverPos) {
     std::vector<Coord> shape;
     Coord orient2D(orient.x, orient.y);
@@ -231,19 +252,42 @@ std::pair<double, double> EnvironmentalDiffraction::isInLOS(const Coord& pos, co
         }
     }
 
-    if (inLOS) {
-        // determine center and height of the vehicle
-        Coord center = pos - orient/orient.length()*LENGTH/2;
-        Coord center0 = center;
-        center0.z = 0;
-        Coord senderPos0 = senderPos;
-        senderPos0.z = 0;
-        double d = (center0 - senderPos0).length();
-        double h = HEIGHT/cos(elev_angle);
-        if (h > LENGTH/2) h = LENGTH/2;
-        h += center.z;
-        return std::make_pair(d, h);
-    } else return std::make_pair(-1.0, -1.0);
+    if (!inLOS)
+        return std::make_pair(-1.0, -1.0);
+
+    // determine z-coordinate of LOS at vehicle position
+    Coord center = pos - orient / orient.length() * LENGTH / 2;
+    // horizontal distance between sender and vehicle
+    Coord vTxCenter = center - senderPos;
+    vTxCenter.z = 0;
+    double dTxCenter = vTxCenter.length();
+    // horizontal distance between sender and receiver
+    Coord vTxRx = receiverPos - senderPos;
+    vTxRx.z = 0;
+    double dTxRx = vTxRx.length();
+    if (dTxCenter > dTxRx) // if this happens, the vehicle is probably on another road layer
+        return std::make_pair(-1.0, -1.0);
+    double zLOS = senderPos.z + (receiverPos.z - senderPos.z) * dTxCenter / dTxRx;
+    if (center.z > zLOS) {
+        // vehicle is above LOS, check if it is on the ground (i.e. on a hill)
+        TraCIScenarioManager* traciManager = FindModule<TraCIScenarioManager*>::findGlobalModule();
+        if (traciManager == NULL) {
+            throw cRuntimeError("Could not find TraCIScenarioManager module");
+        }
+
+        // if not, it is on another road layer and does not block the LOS
+        // even if on ground, DEM result and z value might not match exactly, but if difference is more than a vehicle's height, it has to be on another road layer
+        if (!considerDEM || abs(getElevation(pos, traciManager) - pos.z) > HEIGHT) {
+            return std::make_pair(-1.0, -1.0);
+        }
+    }
+
+    // LOS is really affected by vehicle, thus return its distance/height
+    double h = HEIGHT / cos(elev_angle);
+    if (h > LENGTH / 2)
+        h = LENGTH / 2;
+    h += center.z;
+    return std::make_pair(dTxCenter, h);
 }
 
 bool EnvironmentalDiffraction::segmentsIntersect(Coord p1From, Coord p1To, Coord p2From, Coord p2To) {
