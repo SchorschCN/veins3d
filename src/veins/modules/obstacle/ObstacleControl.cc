@@ -103,6 +103,9 @@ void ObstacleControl::addFromXml(cXMLElement* xml) {
 			std::string id = e->getAttribute("id");
 			ASSERT(e->getAttribute("type"));
 			std::string type = e->getAttribute("type");
+
+			if (type != "building" && type != "amenity") continue;
+
 			ASSERT(e->getAttribute("color"));
 			std::string color = e->getAttribute("color");
 			ASSERT(e->getAttribute("shape"));
@@ -115,7 +118,8 @@ void ObstacleControl::addFromXml(cXMLElement* xml) {
 				std::string xy = st.nextToken();
 				std::vector<double> xya = cStringTokenizer(xy.c_str(), ",").asDoubleVector();
 				ASSERT(xya.size() == 2);
-				sh.push_back(Coord(xya[0], xya[1]));
+				//sh.push_back(Coord(xya[0], xya[1]));
+				sh.push_back(lonLatToCart(xya[0], xya[1], 0));
 			}
 			obs.setShape(sh);
 			add(obs);
@@ -127,6 +131,14 @@ void ObstacleControl::addFromXml(cXMLElement* xml) {
 
 	}
 
+}
+
+Coord ObstacleControl::lonLatToCart(double lon, double lat, double alt) {
+    double cartX = (lon - 11.203823)*cos(fabs(49.625335/180*M_PI))*111320.0;
+    double cartY = (lat - 49.625335) * 111136.0;
+    cartY = 5000 - cartY;
+
+    return Coord(cartX, cartY, alt);
 }
 
 void ObstacleControl::addFromTypeAndShape(std::string id, std::string typeId, std::vector<Coord> shape) {

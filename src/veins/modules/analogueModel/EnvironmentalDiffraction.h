@@ -142,8 +142,14 @@ public:
      * @param spacing the spacing of queried height profile points of the terrain along the LOS
      * @param considerVehicles states whether other vehicles should be considered
      */
+
+    /*Note: this constructor is not implemented, so that in (TODO this environment) error will be reported:
+     * undefined symbol: _ZN24EnvironmentalDiffractionC1Edbddb
+     *
+     */
     EnvironmentalDiffraction(double carrierFrequency, bool considerDEM, double demCellSize, double spacing,
             bool considerVehicles);
+
 
     /**
      * @brief Filters a specified AirFrame's Signal by adding the resulting attenuation.

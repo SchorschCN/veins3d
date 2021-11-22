@@ -47,6 +47,7 @@ class ObstacleControl : public cSimpleModule
 		void handleSelfMsg(cMessage *msg);
 
 		void addFromXml(cXMLElement* xml);
+		Coord lonLatToCart(double lon, double lat, double alt);
 		void addFromTypeAndShape(std::string id, std::string typeId, std::vector<Coord> shape);
 		void add(Obstacle obstacle);
 		void erase(const Obstacle* obstacle);

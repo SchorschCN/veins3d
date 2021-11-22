@@ -171,7 +171,7 @@ void BaseMobility::initialize(int stage)
         // print new host position on the screen and update bb info
         updatePosition();
 
-        if (move.getSpeed() > 0 && updateInterval > 0)
+        if (/*move.getSpeed() > 0 && */updateInterval > 0)
         {
         	coreEV << "Host is moving, speed=" << move.getSpeed() << " updateInterval=" << updateInterval << endl;
         	moveMsg = new cMessage("move", MOVE_HOST);

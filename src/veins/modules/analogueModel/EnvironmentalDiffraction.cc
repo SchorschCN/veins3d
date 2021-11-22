@@ -3,6 +3,7 @@
 #include "veins/modules/mobility/traci/TraCIScenarioManager.h"
 #include "veins/modules/mobility/traci/TraCIMobility.h"
 #include "veins/modules/mobility/traci/TraCICommandInterface.h"
+#include "veins/modules/mobility/TraceMobility.h"
 
 #define WIDTH 1.8 // assumed vehicle width
 #define LENGTH 4.5 // assumed vehicle length
@@ -28,6 +29,8 @@ EnvironmentalDiffraction::EnvironmentalDiffraction(double carrierFrequency, bool
     this->considerVehicles = considerVehicles;
     this->considerDEM = considerDEM;
 
+
+
     if (!considerDEM) return;
 
     // the DEM cache is shared by all EnvironmentalDiffraction objects and needs to be initialized once;
@@ -48,6 +51,11 @@ EnvironmentalDiffraction::EnvironmentalDiffraction(double carrierFrequency, bool
     if (!hm.ready()) NBHeightMapper::loadHM(demFiles, isRasterType);
 }
 
+
+/* 14.11.2021
+ * add (deleted) Alternative constructor implementation
+ * without this, undefined symbol error will come
+ * */
 EnvironmentalDiffraction::EnvironmentalDiffraction(double carrierFrequency, bool considerDEM, double demCellSize, double spacing, bool considerVehicles){
     this->wavelength = BaseWorldUtility::speedOfLight()/carrierFrequency;
     this->spacing = spacing;
@@ -75,6 +83,7 @@ EnvironmentalDiffraction::EnvironmentalDiffraction(double carrierFrequency, bool
     if (!hm.ready()) throw cRuntimeError("No height map for environmental diffraction model");
 }
 
+
 void EnvironmentalDiffraction::filterSignal(AirFrame *frame, const Coord& senderPos, const Coord& receiverPos) {
     Signal& s = frame->getSignal();
 
@@ -96,7 +105,7 @@ double EnvironmentalDiffraction::calcAttenuation(const Coord& senderPos, const C
     edgeMap[0.0] = senderPos.z;
     edgeMap[dLos] = receiverPos.z;
 
-    TraCIScenarioManager* traciManager = FindModule<TraCIScenarioManager*>::findGlobalModule();
+    /*TraCIScenarioManager* traciManager = FindModule<TraCIScenarioManager*>::findGlobalModule();
     if (traciManager == NULL) {
         throw cRuntimeError("Could not find TraCIScenarioManager module");
     }
@@ -139,11 +148,14 @@ double EnvironmentalDiffraction::calcAttenuation(const Coord& senderPos, const C
                 }
             }
         }
-    }
+
+
+    }*/
 
     if (considerDEM) {
         // open DEM, read equidistant points along LOS (dependent on spacing) and add them to knife-edge map
-        TraCICommandInterface* traciCI = traciManager->getCommandInterface();
+        //TraCICommandInterface* traciCI = traciManager->getCommandInterface();
+        TraceMobility* tm = FindModule<TraceMobility*>::findGlobalModule();
         const NBHeightMapper& hm = NBHeightMapper::get();
         if (!hm.ready()) throw cRuntimeError("No height map for environmental diffraction model");
         for (double d = spacing; d < dLos; d += spacing) {
@@ -153,8 +165,10 @@ double EnvironmentalDiffraction::calcAttenuation(const Coord& senderPos, const C
             if (demCellSize == 0.0) {
             // get the height value by querying the DEM
                 double lon, lat;
-                std::tie(lon, lat) = traciCI->getLonLat(p);
-                edgeMap[d] = hm.getZ(Position(lon, lat));
+                //std::tie(lon, lat) = traciCI->getLonLat(p);
+                Coord lonLat = tm->cartToLonLat(p);
+                //edgeMap[d] = hm.getZ(Position(lon, lat));
+                edgeMap[d] = hm.getZ(Position(lonLat.x, lonLat.y));
             } else {
                 // determine the position in the DEM cache for coordinate p
                 size_t x = (size_t)(p.x/demCellSize);
@@ -169,8 +183,10 @@ double EnvironmentalDiffraction::calcAttenuation(const Coord& senderPos, const C
                     else cellCenterY = (EnvironmentalDiffraction::pgs->y + y*demCellSize)/2;
                     // get the height value by querying the DEM
                     double lon, lat;
-                    std::tie(lon, lat) = traciCI->getLonLat(Coord(cellCenterX, cellCenterY));
-                    demCache[y*EnvironmentalDiffraction::cacheCols + x] = hm.getZ(Position(lon, lat));
+                    //std::tie(lon, lat) = traciCI->getLonLat(Coord(cellCenterX, cellCenterY));
+                    Coord lonLat = tm->cartToLonLat(Coord(cellCenterX, cellCenterY));
+                    //demCache[y*EnvironmentalDiffraction::cacheCols + x] = hm.getZ(Position(lon, lat));
+                    demCache[y*EnvironmentalDiffraction::cacheCols + x] = hm.getZ(Position(lonLat.x, lonLat.y));
                 }
                 // return the height value as stored in the DEM cache
                 edgeMap[d] = demCache[y*EnvironmentalDiffraction::cacheCols + x];
@@ -202,6 +218,8 @@ double EnvironmentalDiffraction::calcAttenuation(const Coord& senderPos, const C
     double T = 1.0 - exp(-getJFuncValue(v_p)/6.0);
     double C = 10.0 + 0.04*dLos/1000.0;
     double L = getJFuncValue(v_p) + T*(getJFuncValue(v_t) + getJFuncValue(v_r) + C);
+
+
 
     return FWMath::dBm2mW(-L);
 }
