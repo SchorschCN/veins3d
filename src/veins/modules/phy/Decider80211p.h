@@ -122,6 +122,8 @@ class Decider80211p: public BaseDecider {
 		/** @brief notify PHY-RXSTART.indication  */
 		bool notifyRxStart;
 
+		cOutVector receivedPow;
+
 	protected:
 
 		/**

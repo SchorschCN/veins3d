@@ -440,6 +440,9 @@ simtime_t Decider80211p::processSignalEnd(AirFrame* msg) {
 
 	DeciderResult* result;
 
+	//record recieved power
+	receivedPow.record(recvPower_dBm);
+
 	if (frame->getUnderSensitivity()) {
 		//this frame was not even detected by the radio card
 		result = new DeciderResult80211(false,0,0,recvPower_dBm);
