@@ -32,3 +32,13 @@ simple ObstacleControl
         @labels(node);
 }
 
+simple VegetationObstacleControl
+{
+    parameters:
+        @class(Veins::VegetationObstacleControl);
+        bool debug = default(false);  // emit debug messages?
+        xml obstacles = default(xml("<vegetationObstacles/>")); // list of obstacle types and vegetation obstacles to load
+        @display("i=misc/town");
+        @labels(node);
+}
+

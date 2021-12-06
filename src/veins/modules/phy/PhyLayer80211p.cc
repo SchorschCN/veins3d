@@ -36,6 +36,7 @@
 #include "veins/modules/analogueModel/NakagamiFading.h"
 #include "veins/modules/analogueModel/DiffAndGround.h"
 #include <veins/modules/analogueModel/FloorAttenuation.h>
+#include "veins/modules/analogueModel/VegetationWeissbg.h"
 #include <veins/modules/floor/FloorControl.h>
 #include "veins/base/connectionManager/BaseConnectionManager.h"
 #include "veins/modules/utility/Consts80211p.h"
@@ -43,6 +44,7 @@
 #include "veins/base/phyLayer/MacToPhyControlInfo.h"
 
 using Veins::ObstacleControlAccess;
+using Veins::VegetationObstacleControlAccess;
 
 Define_Module(PhyLayer80211p);
 
@@ -115,6 +117,18 @@ AnalogueModel* PhyLayer80211p::getAnalogueModelFromName(std::string name, Parame
 	{
 		return initializeFloorAttenuation(params);
 	}
+	else if (name == "VegetationWeissbg")
+	{
+	    return initializeVegetationWeissbg(params);
+	}
+//	else if (name == "VegetationITU")
+//	{
+//	    return initializeVegetationITU(params);
+//	}
+//    else if (name == "VegetationCOST")
+//    {
+//        return initializeVegetationCOST(params);
+//    }
 	return BasePhyLayer::getAnalogueModelFromName(name, params);
 }
 
@@ -708,6 +722,154 @@ AnalogueModel* PhyLayer80211p::initializeFloorAttenuation(ParameterMap& params) 
 	if (!floorControlP) throw cRuntimeError("initializeFloorAttenuation(): cannot find FloorControl module");
 	return new FloorAttenuation(*floorControlP, carrierFrequency);
 }
+
+/*parameter parsing for weissberger vegetation model
+ * TODO: adapt initialize functions and vegetation obstacle control class in veins/modules/obstacle
+ * TODO: debug VegetationObstacleControl.ned and classes and functions above
+ * */
+AnalogueModel* PhyLayer80211p::initializeVegetationWeissbg(ParameterMap& params){
+
+    // init with default value
+    double carrierFrequency = 5.890e+9;
+    //bool useTorus = world->useTorus();
+    const Coord& playgroundSize = *(world->getPgs());
+
+    ParameterMap::iterator it;
+
+    // get carrierFrequency from config
+    it = params.find("carrierFrequency");
+
+    if ( it != params.end() ) // parameter carrierFrequency has been specified in config.xml
+    {
+        // set carrierFrequency
+        carrierFrequency = it->second.doubleValue();
+        coreEV << "initializeVegetationWeissbg(): carrierFrequency set from config.xml to " << carrierFrequency << endl;
+
+        // check whether carrierFrequency is not smaller than specified in ConnectionManager
+        if(cc->hasPar("carrierFrequency") && carrierFrequency < cc->par("carrierFrequency").doubleValue())
+        {
+            // throw error
+            throw cRuntimeError("initializeVegetationWeissbg(): carrierFrequency can't be smaller than specified in ConnectionManager. Please adjust your config.xml file accordingly");
+        }
+    }
+    else // carrierFrequency has not been specified in config.xml
+    {
+        if (cc->hasPar("carrierFrequency")) // parameter carrierFrequency has been specified in ConnectionManager
+        {
+            // set carrierFrequency according to ConnectionManager
+            carrierFrequency = cc->par("carrierFrequency").doubleValue();
+            coreEV << "createPathLossModel(): carrierFrequency set from ConnectionManager to " << carrierFrequency << endl;
+        }
+        else // carrierFrequency has not been specified in ConnectionManager
+        {
+            // keep carrierFrequency at default value
+            coreEV << "createPathLossModel(): carrierFrequency set from default value to " << carrierFrequency << endl;
+        }
+    }
+
+    VegetationObstacleControl* obstacleControlP = VegetationObstacleControlAccess().getIfExists();
+    if (!obstacleControlP) throw cRuntimeError("initializeVegetationWeissbg(): cannot find VegetationObstacleControl module");
+    return new VegetationWeissbg(*obstacleControlP, carrierFrequency, playgroundSize, coreDebug);
+}
+
+//TODO: add other 2 vegetation models back
+#if 0
+/*parameter parsing for itu vegetation model*/
+AnalogueModel* PhyLayer80211p::initializeVegetationITU(ParameterMap& params){
+
+    // init with default value
+    double carrierFrequency = 5.890e+9;
+    bool useTorus = world->useTorus();
+    const Coord& playgroundSize = *(world->getPgs());
+
+    ParameterMap::iterator it;
+
+    // get carrierFrequency from config
+    it = params.find("carrierFrequency");
+
+    if ( it != params.end() ) // parameter carrierFrequency has been specified in config.xml
+    {
+        // set carrierFrequency
+        carrierFrequency = it->second.doubleValue();
+        coreEV << "initializeSimpleObstacleShadowing(): carrierFrequency set from config.xml to " << carrierFrequency << endl;
+
+        // check whether carrierFrequency is not smaller than specified in ConnectionManager
+        if(cc->hasPar("carrierFrequency") && carrierFrequency < cc->par("carrierFrequency").doubleValue())
+        {
+            // throw error
+            throw cRuntimeError("initializeSimpleObstacleShadowing(): carrierFrequency can't be smaller than specified in ConnectionManager. Please adjust your config.xml file accordingly");
+        }
+    }
+    else // carrierFrequency has not been specified in config.xml
+    {
+        if (cc->hasPar("carrierFrequency")) // parameter carrierFrequency has been specified in ConnectionManager
+        {
+            // set carrierFrequency according to ConnectionManager
+            carrierFrequency = cc->par("carrierFrequency").doubleValue();
+            coreEV << "createPathLossModel(): carrierFrequency set from ConnectionManager to " << carrierFrequency << endl;
+        }
+        else // carrierFrequency has not been specified in ConnectionManager
+        {
+            // keep carrierFrequency at default value
+            coreEV << "createPathLossModel(): carrierFrequency set from default value to " << carrierFrequency << endl;
+        }
+    }
+
+    ObstacleControl* obstacleControlP = ObstacleControlAccess().getIfExists();
+    if (!obstacleControlP) throw cRuntimeError("initializeSimpleObstacleShadowing(): cannot find ObstacleControl module");
+    return new SimpleObstacleShadowing(*obstacleControlP, carrierFrequency, useTorus, playgroundSize, coreDebug);
+}
+
+/*parameter parsing for cost235 vegetation model
+ * typedef std::map<std::string, cMsgPar> ParameterMap;
+ * */
+AnalogueModel* PhyLayer80211p::initializeVegetationCOST(ParameterMap& params){
+
+    // init with default value
+    double carrierFrequency = 5.890e+9;
+    bool useTorus = world->useTorus();
+    const Coord& playgroundSize = *(world->getPgs());
+    bool leaf = false;
+
+    ParameterMap::iterator it;
+
+    // get carrierFrequency from config
+    it = params.find("carrierFrequency");
+
+    if ( it != params.end() ) // parameter carrierFrequency has been specified in config.xml
+    {
+        // set carrierFrequency
+        carrierFrequency = it->second.doubleValue();
+        coreEV << "initializeSimpleObstacleShadowing(): carrierFrequency set from config.xml to " << carrierFrequency << endl;
+
+        // check whether carrierFrequency is not smaller than specified in ConnectionManager
+        if(cc->hasPar("carrierFrequency") && carrierFrequency < cc->par("carrierFrequency").doubleValue())
+        {
+            // throw error
+            throw cRuntimeError("initializeSimpleObstacleShadowing(): carrierFrequency can't be smaller than specified in ConnectionManager. Please adjust your config.xml file accordingly");
+        }
+    }
+    else // carrierFrequency has not been specified in config.xml
+    {
+        if (cc->hasPar("carrierFrequency")) // parameter carrierFrequency has been specified in ConnectionManager
+        {
+            // set carrierFrequency according to ConnectionManager
+            carrierFrequency = cc->par("carrierFrequency").doubleValue();
+            coreEV << "createPathLossModel(): carrierFrequency set from ConnectionManager to " << carrierFrequency << endl;
+        }
+        else // carrierFrequency has not been specified in ConnectionManager
+        {
+            // keep carrierFrequency at default value
+            coreEV << "createPathLossModel(): carrierFrequency set from default value to " << carrierFrequency << endl;
+        }
+    }
+
+    ObstacleControl* obstacleControlP = ObstacleControlAccess().getIfExists();
+    if (!obstacleControlP) throw cRuntimeError("initializeSimpleObstacleShadowing(): cannot find ObstacleControl module");
+    return new VegetationCOST(*obstacleControlP, carrierFrequency, useTorus, playgroundSize, coreDebug);
+}
+
+#endif
 
 Decider* PhyLayer80211p::initializeDecider80211p(ParameterMap& params) {
 	double centerFreq = params["centerFrequency"];

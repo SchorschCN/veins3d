@@ -181,6 +181,25 @@ class PhyLayer80211p	: 	public BasePhyLayer,
 		 */
 		AnalogueModel* initializeFloorAttenuation(ParameterMap& params);
 
+        /**
+         * @brief Creates and initializes a Weissberger vegetation model with the
+         * passed parameter values.
+         */
+		AnalogueModel* initializeVegetationWeissbg(ParameterMap& params);
+
+        /**
+         * @brief Creates and initializes an itu vegetation model with the
+         * passed parameter values.
+         */
+//		AnalogueModel* initializeVegetationITU(ParameterMap& params);
+
+        /**
+         * @brief Creates and initializes a COST235 vegetation model with the
+         * passed parameter values.
+         */
+//		AnalogueModel* initializeVegetationCOST(ParameterMap& params);
+
+
 		/**
 		 * @brief Creates and returns an instance of the Decider with the specified
 		 * name.
