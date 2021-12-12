@@ -91,7 +91,7 @@ namespace {
 	}
 }
 
-double Obstacle::calculateAttenuation(const Coord& senderPos, const Coord& receiverPos) const {
+double Obstacle::calculateAttenuation(const Coord& senderPos, const Coord& receiverPos) {
 
 	// if obstacles has neither borders nor matter: bail.
 	if (getShape().size() < 2) return 1;
@@ -138,6 +138,9 @@ double Obstacle::calculateAttenuation(const Coord& senderPos, const Coord& recei
 	// calculate attenuation
 	double totalDistance = senderPos.distance(receiverPos);
 	double attenuation = (attenuationPerCut * numCuts) + (attenuationPerMeter * fractionInObstacle * totalDistance);
+
+	// set numCuts and fractionInObstacle, added for vegetation
+	setFractionInObstacle(fractionInObstacle);
 	return pow(10.0, -attenuation/10.0);
 }
 
@@ -148,3 +151,28 @@ std::string Obstacle::getType() const {
 std::string Obstacle::getId() const {
 	return id;
 }
+
+
+/*save number of cuts and fractionInObstacle in object and provide functions for calling from other class objects*/
+#if 0
+void Obstacle::setNumCuts(double numCuts)
+{
+    this->cutNum=numCuts;
+}
+double Obstacle::getNumCuts()
+{
+    return cutNum;
+}
+#endif
+
+void Obstacle::setFractionInObstacle(double fractionInObstacle)
+{
+    this->fractionIn = fractionInObstacle;
+}
+
+
+double Obstacle::getFractionInObstacle()
+{
+    return fractionIn;
+}
+

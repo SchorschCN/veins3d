@@ -15,7 +15,7 @@
 
 import org.car2x.veins.nodes.Trace;
 import org.car2x.veins.modules.world.annotations.AnnotationManager;
-import org.car2x.veins.modules.obstacle.ObstacleControl;
+import org.car2x.veins.modules.obstacle.*;
 import org.car2x.veins.base.connectionManager.ConnectionManager;
 import org.car2x.veins.base.modules.BaseWorldUtility;
 
@@ -30,6 +30,7 @@ network TraceScenario
     	obstacles: ObstacleControl {
             @display("p=240,50");
         }
+        vegetationObstacles: VegetationObstacleControl;
         nodes[2]: Trace;
         annotations: AnnotationManager {
             @display("p=260,50");

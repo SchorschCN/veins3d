@@ -43,9 +43,16 @@ class Obstacle {
 		std::string getType() const;
 		std::string getId() const;
 
-		double calculateAttenuation(const Coord& senderPos, const Coord& receiverPos) const;
+		double calculateAttenuation(const Coord& senderPos, const Coord& receiverPos);
 
 		AnnotationManager::Annotation* visualRepresentation;
+
+	    // newly added for Vegetation Models in 11.2021 from Hao Sheng
+	public:
+	    void setNumCuts(double numCuts);
+	    void setFractionInObstacle(double fractionInObstacle);
+	    double getNumCuts();
+	    double getFractionInObstacle();
 
 	protected:
 		std::string id;
@@ -55,7 +62,11 @@ class Obstacle {
 		Coords coords;
 		Coord bboxP1;
 		Coord bboxP2;
-};
-}
 
+		//newly added for Vegetation Models in 11.2021
+//		mutable double cutNum;
+		mutable double fractionIn;
+};
+
+}
 #endif
