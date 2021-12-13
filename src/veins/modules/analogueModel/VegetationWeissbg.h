@@ -13,11 +13,10 @@ using Veins::TraCIScenarioManager;
 class VegetationWeissbg : public AnalogueModel {
 	protected:
         VegetationObstacleControl& vegetationObstacleControl;
-		double wavelength;		//wavelength
+		double wavelength;
 		double Frequency;
-		const Coord* playgroundSize;	//playground size
+		const Coord* playgroundSize;
 		bool debug;
-//		double calcDepth(const Coord& senderPos, const Coord& receiverPos) const;
 
 	public:
 		VegetationWeissbg(VegetationObstacleControl& vegetationObstacleControl, double carrierFrequency, const Coord& playgroundSize, bool debug);

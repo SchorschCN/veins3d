@@ -39,13 +39,14 @@ void VegetationObstacleControl::initialize(int stage) {
 
 		obstacles.clear();
 		cacheEntries.clear();
-        this->fractionInObstacle = 0.0;
+        this->fractionInObstacle = 0;
 
 		annotations = AnnotationManagerAccess().getIfExists();
 		if (annotations) annotationGroup = annotations->createGroup("obstacles");
 
 		obstaclesXml = par("obstacles");
 		addFromXml(obstaclesXml);
+
 	}
 }
 
@@ -73,7 +74,6 @@ void VegetationObstacleControl::handleSelfMsg(cMessage *msg) {
 
 void VegetationObstacleControl::addFromXml(cXMLElement* xml) {
 	std::string rootTag = xml->getTagName();
-	std::cout<<"xml Name: "<<rootTag<<std::endl;
 	if (rootTag != "obstacles") {
 		throw cRuntimeError("Obstacle definition root tag was \"%s\", but expected \"obstacles\"", rootTag.c_str());
 	}
@@ -84,7 +84,6 @@ void VegetationObstacleControl::addFromXml(cXMLElement* xml) {
 		cXMLElement* e = *i;
 
 		std::string tag = e->getTagName();
-	    std::cout<<"tag Name: "<<tag<<std::endl;
 
 		if (tag == "type")
 		{
@@ -110,6 +109,11 @@ void VegetationObstacleControl::addFromXml(cXMLElement* xml) {
 			std::string id = e->getAttribute("id");
 			ASSERT(e->getAttribute("type"));
 			std::string type = e->getAttribute("type");
+
+
+			/*don't add polygons with types different from landuse.forest&natural wood*/
+			if (type != "forest" && type != "wood") continue;
+
 			ASSERT(e->getAttribute("color"));
 			std::string color = e->getAttribute("color");
 			ASSERT(e->getAttribute("shape"));
@@ -123,7 +127,8 @@ void VegetationObstacleControl::addFromXml(cXMLElement* xml) {
 				std::string xy = st.nextToken();
 				std::vector<double> xya = cStringTokenizer(xy.c_str(), ",").asDoubleVector();
 				ASSERT(xya.size() == 2);
-				sh.push_back(Coord(xya[0], xya[1]));
+//				sh.push_back(Coord(xya[0], xya[1]));
+				sh.push_back(lonLatToCart(xya[0], xya[1], 0));
 			}
 			obs.setShape(sh);
 			add(obs);
@@ -135,6 +140,14 @@ void VegetationObstacleControl::addFromXml(cXMLElement* xml) {
 
 	}
 
+}
+
+Coord VegetationObstacleControl::lonLatToCart(double lon, double lat, double alt) {
+    double cartX = (lon - 11.203823)*cos(fabs(49.625335/180*M_PI))*111320.0;
+    double cartY = (lat - 49.625335) * 111136.0;
+    cartY = 5000 - cartY;
+
+    return Coord(cartX, cartY, alt);
 }
 
 void VegetationObstacleControl::addFromTypeAndShape(std::string id, std::string typeId, std::vector<Coord> shape) {
@@ -162,7 +175,7 @@ void VegetationObstacleControl::add(Obstacle obstacle) {
 	}
 
 	// visualize using AnnotationManager
-	if (annotations) o->visualRepresentation = annotations->drawPolygon(o->getShape(), "red", annotationGroup);
+	if (annotations) o->visualRepresentation = annotations->drawPolygon(o->getShape(), "green", annotationGroup);
 
 	cacheEntries.clear();
 }
@@ -213,7 +226,12 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 	// calculate bounding box of transmission
 	Coord bboxP1 = Coord(std::min(senderPos.x, receiverPos.x), std::min(senderPos.y, receiverPos.y));
 	Coord bboxP2 = Coord(std::max(senderPos.x, receiverPos.x), std::max(senderPos.y, receiverPos.y));
-
+/*
+    //TODO remove this debug info
+	std::cout<<"transmission bbox is:"<< std::endl;
+	std::cout<<"                "<<bboxP2.x<<", "<<bboxP2.y<< std::endl;
+	std::cout<<bboxP1.x<<", "<<bboxP1.y<<std::endl;
+*/
 	size_t fromRow = std::max(0, int(bboxP1.x / GRIDCELL_SIZE));
 	size_t toRow = std::max(0, int(bboxP2.x / GRIDCELL_SIZE));
 	size_t fromCol = std::max(0, int(bboxP1.y / GRIDCELL_SIZE));
@@ -221,17 +239,34 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 
 	std::set<Obstacle*> processedObstacles;
 	double factor = 1;
-	for (size_t col = fromCol; col <= toCol; ++col) {
-		if (col >= obstacles.size()) break;
-		for (size_t row = fromRow; row <= toRow; ++row) {
+	for (size_t col = fromCol; col <= toCol; ++col)
+	{
+        //TODO remove this debug info
+//        std::cout<<"calcDepth runs, col= "<< col <<std::endl;
+	    if (col >= obstacles.size()) break;
+		for (size_t row = fromRow; row <= toRow; ++row)
+		{
+	        //TODO remove this debug info
+//	        std::cout<<"calcDepth runs, row= "<< row <<std::endl;
 			if (row >= obstacles[col].size()) break;
 			const ObstacleGridCell& cell = (obstacles[col])[row];
-			for (ObstacleGridCell::const_iterator k = cell.begin(); k != cell.end(); ++k) {
+			for (ObstacleGridCell::const_iterator k = cell.begin(); k != cell.end(); ++k)
+			{
 
 				Obstacle* o = *k;
 
 				if (processedObstacles.find(o) != processedObstacles.end()) continue;
 				processedObstacles.insert(o);
+				/*
+			    //TODO remove this debug info
+			    std::cout<<"obstacle bbox is:"<< std::endl;
+			    std::cout<<"                "<<o->getBboxP2().x<<", "<<o->getBboxP2().y<< std::endl;
+			    std::cout<<o->getBboxP1().x<<", "<<o->getBboxP1().y<<std::endl;
+
+			    std::cout<<"transmission bbox is:"<< std::endl;
+			    std::cout<<"                "<<bboxP2.x<<", "<<bboxP2.y<< std::endl;
+			    std::cout<<bboxP1.x<<", "<<bboxP1.y<<std::endl;
+			    */
 
 				// bail if bounding boxes cannot overlap
 				if (o->getBboxP2().x < bboxP1.x) continue;
@@ -239,11 +274,19 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 				if (o->getBboxP2().y < bboxP1.y) continue;
 				if (o->getBboxP1().y > bboxP2.y) continue;
 
+		        //TODO remove this debug info
+//		        std::cout<<"current obstacle may affect attenuation"<< std::endl;
+
 				double factorOld = factor;
 
 				factor *= o->calculateAttenuation(senderPos, receiverPos);
-				this->fractionInObstacle += o->getFractionInObstacle();
 
+                //TODO remove this debug info
+//                std::cout<<"fraction in obstacle is CALCULATED now "<< fractionInObstacle << std::endl;
+				this->fractionInObstacle = o->getFractionInObstacle();
+			    //TODO remove this debug info
+
+//			    std::cout<<"sum of fraction in obstacle: "<< fractionInObstacle << ", fraction in current obstacle: "<< o->getFractionInObstacle() << std::endl;
 
 				// draw a "hit!" bubble
 				if (annotations && (factor != factorOld)) annotations->drawBubble(o->getBboxP1(), "hit");
@@ -259,7 +302,11 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 	if (cacheEntries.size() >= 1000) cacheEntries.clear();
 	cacheEntries[cacheKey] = factor;
 	double depth = senderPos.distance(receiverPos)*(this->fractionInObstacle);
-	this->fractionInObstacle = 0.0;
+
+	//TODO remove this debug info
+
+//	std::cout<<"fraction in obstacle is "<< fractionInObstacle << ", total depth is "<< depth << std::endl;
+	this->fractionInObstacle = 0;
 	return depth;
 }
 

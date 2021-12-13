@@ -191,7 +191,7 @@ class PhyLayer80211p	: 	public BasePhyLayer,
          * @brief Creates and initializes an itu vegetation model with the
          * passed parameter values.
          */
-//		AnalogueModel* initializeVegetationITU(ParameterMap& params);
+		AnalogueModel* initializeVegetationITU(ParameterMap& params);
 
         /**
          * @brief Creates and initializes a COST235 vegetation model with the

@@ -45,7 +45,7 @@ class VegetationObstacleControl : public cSimpleModule
 		void finish();
 		void handleMessage(cMessage *msg);
 		void handleSelfMsg(cMessage *msg);
-
+        Coord lonLatToCart(double lon, double lat, double alt);
 		void addFromXml(cXMLElement* xml);
 		void addFromTypeAndShape(std::string id, std::string typeId, std::vector<Coord> shape);
 		void add(Obstacle obstacle);
