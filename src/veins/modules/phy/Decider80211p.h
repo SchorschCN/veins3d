@@ -213,6 +213,7 @@ class Decider80211p: public BaseDecider {
 			notifyRxStart(false) {
 			phy11p = dynamic_cast<Decider80211pToPhy80211pInterface*>(phy);
 			assert(phy11p);
+			receivedPow.setName("received Signal Power");
 
 		}
 

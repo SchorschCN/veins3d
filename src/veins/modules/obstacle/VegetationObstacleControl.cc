@@ -283,7 +283,7 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 
                 //TODO remove this debug info
 //                std::cout<<"fraction in obstacle is CALCULATED now "<< fractionInObstacle << std::endl;
-				this->fractionInObstacle = o->getFractionInObstacle();
+				this->fractionInObstacle += o->getFractionInObstacle();
 			    //TODO remove this debug info
 
 //			    std::cout<<"sum of fraction in obstacle: "<< fractionInObstacle << ", fraction in current obstacle: "<< o->getFractionInObstacle() << std::endl;
@@ -305,7 +305,7 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 
 	//TODO remove this debug info
 
-//	std::cout<<"fraction in obstacle is "<< fractionInObstacle << ", total depth is "<< depth << std::endl;
+	std::cout<<"fraction in obstacle is "<< fractionInObstacle << ", total depth is "<< depth << std::endl;
 	this->fractionInObstacle = 0;
 	return depth;
 }
