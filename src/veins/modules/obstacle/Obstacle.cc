@@ -19,7 +19,7 @@
 
 #include <set>
 #include "veins/modules/obstacle/Obstacle.h"
-
+#include <iostream>
 using Veins::Obstacle;
 
 Obstacle::Obstacle(std::string id, std::string type, double attenuationPerCut, double attenuationPerMeter) :
@@ -27,7 +27,8 @@ Obstacle::Obstacle(std::string id, std::string type, double attenuationPerCut, d
 	id(id),
 	type(type),
 	attenuationPerCut(attenuationPerCut),
-	attenuationPerMeter(attenuationPerMeter) {
+	attenuationPerMeter(attenuationPerMeter),
+	fractionIn(0){
 }
 
 void Obstacle::setShape(Coords shape) {
@@ -94,7 +95,11 @@ namespace {
 double Obstacle::calculateAttenuation(const Coord& senderPos, const Coord& receiverPos) {
 
 	// if obstacles has neither borders nor matter: bail.
-	if (getShape().size() < 2) return 1;
+	if (getShape().size() < 2)
+	{
+	    setFractionInObstacle(0);
+	    return 1;
+	}
 
 	// get a list of points (in [0, 1]) along the line between sender and receiver where the beam intersects with this obstacle
 	std::multiset<double> intersectAt;
@@ -117,7 +122,11 @@ double Obstacle::calculateAttenuation(const Coord& senderPos, const Coord& recei
 	// if beam interacts with neither borders nor matter: bail.
 	bool senderInside = isPointInObstacle(senderPos, *this);
 	bool receiverInside = isPointInObstacle(receiverPos, *this);
-	if (!doesIntersect && !senderInside && !receiverInside) return 1;
+	if (!doesIntersect && !senderInside && !receiverInside)
+	{
+	    setFractionInObstacle(0);
+	    return 1;
+	}
 
 	// remember number of cuts before messing with intersection points
 	double numCuts = intersectAt.size();
@@ -126,7 +135,6 @@ double Obstacle::calculateAttenuation(const Coord& senderPos, const Coord& recei
 	if (senderInside) intersectAt.insert(0);
 	if (receiverInside) intersectAt.insert(1);
 	ASSERT((intersectAt.size() % 2) == 0);
-
 	// sum up distances in matter.
 	double fractionInObstacle = 0;
 	for (std::multiset<double>::const_iterator i = intersectAt.begin(); i != intersectAt.end(); ) {
@@ -134,7 +142,7 @@ double Obstacle::calculateAttenuation(const Coord& senderPos, const Coord& recei
 		double p2 = *(i++);
 		fractionInObstacle += (p2 - p1);
 	}
-
+	std::cout<<"FRACTION IN OBSTACLE IS: "<<fractionInObstacle<<std::endl;
 	// calculate attenuation
 	double totalDistance = senderPos.distance(receiverPos);
 	double attenuation = (attenuationPerCut * numCuts) + (attenuationPerMeter * fractionInObstacle * totalDistance);

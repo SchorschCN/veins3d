@@ -30,12 +30,13 @@ double VegetationWeissbg::calcAttenuation(const Coord& senderPos, const Coord& r
 	if(depthInVegetation >= 0 && depthInVegetation <= 14)
 	{
 		L = 0.45*pow(fInGhz,0.284)*depthInVegetation;
-        std::cout<<"weissbg model used, attenuation is "<<L<<std::endl;
+//		std::cout<<"frequency "<<fInGhz<<", depth in Vegetation "<<depthInVegetation<<std::endl;
+//        std::cout<<"weissbg model used, attenuation is "<<L<<std::endl;
 	}
 	else if(depthInVegetation > 14 && depthInVegetation <= 400)
 	{
 		L = 1.33*pow(fInGhz,0.284)*pow(depthInVegetation,0.588);
-		std::cout<<"weissbg model used, attenuation is "<<L<<std::endl;
+//		std::cout<<"weissbg model used, attenuation is "<<L<<std::endl;
 	}
 	else
 	{

@@ -83,7 +83,7 @@ class VegetationObstacleControl : public cSimpleModule
 			}
 		};
 
-		enum { GRIDCELL_SIZE = 1024 };
+		enum { GRIDCELL_SIZE = 5000 };
 
 		typedef std::list<Obstacle*> ObstacleGridCell;
 		typedef std::vector<ObstacleGridCell> ObstacleGridRow;

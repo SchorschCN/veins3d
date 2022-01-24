@@ -142,6 +142,13 @@ void VegetationObstacleControl::addFromXml(cXMLElement* xml) {
 
 }
 
+
+/* TODO WRITE COMMENT TO FOLLOWING VALUES, EARTH RADIUS SET AS MACRO OR CONST DOUBLE
+ * QUESTION:
+ * 1. EARTH RADIUS?
+ * 2. 111136.0 OR 111320.0?
+ *
+ * */
 Coord VegetationObstacleControl::lonLatToCart(double lon, double lat, double alt) {
     double cartX = (lon - 11.203823)*cos(fabs(49.625335/180*M_PI))*111320.0;
     double cartY = (lat - 49.625335) * 111136.0;
@@ -214,7 +221,7 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 		throw cRuntimeError("Unable to use Vegetation Attenuation: No obstacles have been added");
 	}
 
-	// TODO: check if cache still useful?
+	// TODO: check if cache still useful in VegetationObstacleControl?
 
 	// return cached result, if available
 
@@ -226,12 +233,13 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 	// calculate bounding box of transmission
 	Coord bboxP1 = Coord(std::min(senderPos.x, receiverPos.x), std::min(senderPos.y, receiverPos.y));
 	Coord bboxP2 = Coord(std::max(senderPos.x, receiverPos.x), std::max(senderPos.y, receiverPos.y));
-/*
-    //TODO remove this debug info
-	std::cout<<"transmission bbox is:"<< std::endl;
+
+    /*TODO remove this debug info
+	std::cout<<"sender and receiver MOVED TO:"<< std::endl;
 	std::cout<<"                "<<bboxP2.x<<", "<<bboxP2.y<< std::endl;
 	std::cout<<bboxP1.x<<", "<<bboxP1.y<<std::endl;
-*/
+	*/
+
 	size_t fromRow = std::max(0, int(bboxP1.x / GRIDCELL_SIZE));
 	size_t toRow = std::max(0, int(bboxP2.x / GRIDCELL_SIZE));
 	size_t fromCol = std::max(0, int(bboxP1.y / GRIDCELL_SIZE));
@@ -266,7 +274,7 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 			    std::cout<<"transmission bbox is:"<< std::endl;
 			    std::cout<<"                "<<bboxP2.x<<", "<<bboxP2.y<< std::endl;
 			    std::cout<<bboxP1.x<<", "<<bboxP1.y<<std::endl;
-			    */
+                */
 
 				// bail if bounding boxes cannot overlap
 				if (o->getBboxP2().x < bboxP1.x) continue;
@@ -276,20 +284,37 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 
 		        //TODO remove this debug info
 //		        std::cout<<"current obstacle may affect attenuation"<< std::endl;
-
+				/*TODO remove this debug info
+                std::cout<<"calculated obstacle bbox is:"<< std::endl;
+                std::cout<<"                "<<o->getBboxP2().x<<", "<<o->getBboxP2().y<< std::endl;
+                std::cout<<o->getBboxP1().x<<", "<<o->getBboxP1().y<<std::endl;
+                */
 				double factorOld = factor;
 
 				factor *= o->calculateAttenuation(senderPos, receiverPos);
 
                 //TODO remove this debug info
 //                std::cout<<"fraction in obstacle is CALCULATED now "<< fractionInObstacle << std::endl;
-				this->fractionInObstacle += o->getFractionInObstacle();
+				if(o->getFractionInObstacle()!=0)
+				{
+				    std::cout<<"vegetation obstructs signal"<<std::endl;
+				    std::cout<<"current simulation time is: "<<simTime()<<std::endl;
+				    this->fractionInObstacle += o->getFractionInObstacle();
+				}
+				/*
+				else
+				{
+				    std::cout<<"fraction in obstacle: "<<o->getFractionInObstacle()<<std::endl;
+				    std::cout<<"vegetation didnt obstruct signal"<<std::endl;
+				    std::cout<<"current simulation time is: "<<simTime()<<std::endl;
+				}
+				*/
 			    //TODO remove this debug info
 
 //			    std::cout<<"sum of fraction in obstacle: "<< fractionInObstacle << ", fraction in current obstacle: "<< o->getFractionInObstacle() << std::endl;
 
 				// draw a "hit!" bubble
-				if (annotations && (factor != factorOld)) annotations->drawBubble(o->getBboxP1(), "hit");
+//				if (annotations && (factor != factorOld)) annotations->drawBubble(o->getBboxP1(), "hit");
 
 				// bail if attenuation is already extremely high
 				if (factor < 1e-30) break;
@@ -305,7 +330,7 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 
 	//TODO remove this debug info
 
-	std::cout<<"fraction in obstacle is "<< fractionInObstacle << ", total depth is "<< depth << std::endl;
+//	std::cout<<"fraction in obstacle is "<< fractionInObstacle << ", total depth is "<< depth << std::endl;
 	this->fractionInObstacle = 0;
 	return depth;
 }

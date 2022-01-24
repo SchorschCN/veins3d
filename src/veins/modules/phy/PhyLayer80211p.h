@@ -197,7 +197,7 @@ class PhyLayer80211p	: 	public BasePhyLayer,
          * @brief Creates and initializes a COST235 vegetation model with the
          * passed parameter values.
          */
-//		AnalogueModel* initializeVegetationCOST(ParameterMap& params);
+		AnalogueModel* initializeVegetationCOST(ParameterMap& params);
 
 
 		/**
