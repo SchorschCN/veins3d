@@ -39,6 +39,7 @@
 #include "veins/modules/analogueModel/VegetationWeissbg.h"
 #include "veins/modules/analogueModel/VegetationITU.h"
 #include "veins/modules/analogueModel/VegetationCOST.h"
+#include "veins/modules/analogueModel/VegetationGemv.h"
 #include <veins/modules/floor/FloorControl.h>
 #include "veins/base/connectionManager/BaseConnectionManager.h"
 #include "veins/modules/utility/Consts80211p.h"
@@ -128,6 +129,10 @@ AnalogueModel* PhyLayer80211p::getAnalogueModelFromName(std::string name, Parame
 	    return initializeVegetationITU(params);
 	}
     else if (name == "VegetationCOST")
+    {
+        return initializeVegetationCOST(params);
+    }
+    else if (name == "VegetationGemv")
     {
         return initializeVegetationCOST(params);
     }

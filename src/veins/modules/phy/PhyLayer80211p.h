@@ -199,6 +199,12 @@ class PhyLayer80211p	: 	public BasePhyLayer,
          */
 		AnalogueModel* initializeVegetationCOST(ParameterMap& params);
 
+	       /**
+	         * @brief Creates and initializes the vegetation model used by gemv2 with the
+	         * passed parameter values.
+	         */
+	        AnalogueModel* initializeVegetationGEMV2(ParameterMap& params);
+
 
 		/**
 		 * @brief Creates and returns an instance of the Decider with the specified
