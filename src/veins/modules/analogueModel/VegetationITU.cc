@@ -17,7 +17,7 @@ double VegetationITU::calcAttenuation(const Coord& senderPos, const Coord& recei
     double fInMhz = Frequency/1000000;
     if( depthInVegetation < 400 && fInMhz>=200 && fInMhz<=95000 )
     {
-        L = 0.2*pow(Frequency,0.3)*pow(depthInVegetation,0.6);
+        L = 0.2*pow(fInMhz,0.3)*pow(depthInVegetation,0.6);
     }
     else
     {

@@ -134,7 +134,11 @@ AnalogueModel* PhyLayer80211p::getAnalogueModelFromName(std::string name, Parame
     }
     else if (name == "VegetationGemv")
     {
-        return initializeVegetationCOST(params);
+        return initializeVegetationGEMV2(params);
+    }
+    else if (name == "VegetationFITUR")
+    {
+        return initializeVegetationFITUR(params);
     }
 	return BasePhyLayer::getAnalogueModelFromName(name, params);
 }
@@ -832,7 +836,7 @@ AnalogueModel* PhyLayer80211p::initializeVegetationCOST(ParameterMap& params){
     double carrierFrequency = 5.890e+9;
     bool useTorus = world->useTorus();
     const Coord& playgroundSize = *(world->getPgs());
-    bool leaf = false;
+    bool leaf = true;
     bool coreDebug = false;
 
     ParameterMap::iterator it;
@@ -871,6 +875,101 @@ AnalogueModel* PhyLayer80211p::initializeVegetationCOST(ParameterMap& params){
     VegetationObstacleControl* obstacleControlP = VegetationObstacleControlAccess().getIfExists();
     if (!obstacleControlP) throw cRuntimeError("initializeVegetationCOST(): cannot find VegetationObstacleControl module");
     return new VegetationCOST(*obstacleControlP, carrierFrequency, playgroundSize, leaf, coreDebug);
+}
+
+/*parameter parsing for itu vegetation model*/
+AnalogueModel* PhyLayer80211p::initializeVegetationGEMV2(ParameterMap& params){
+
+    // init with default value
+    double carrierFrequency = 5.890e+9;
+    const Coord& playgroundSize = *(world->getPgs());
+
+    ParameterMap::iterator it;
+
+    // get carrierFrequency from config
+    it = params.find("carrierFrequency");
+
+    if ( it != params.end() ) // parameter carrierFrequency has been specified in config.xml
+    {
+        // set carrierFrequency
+        carrierFrequency = it->second.doubleValue();
+        coreEV << "initializeVegetationGEMV2(): carrierFrequency set from config.xml to " << carrierFrequency << endl;
+
+        // check whether carrierFrequency is not smaller than specified in ConnectionManager
+        if(cc->hasPar("carrierFrequency") && carrierFrequency < cc->par("carrierFrequency").doubleValue())
+        {
+            // throw error
+            throw cRuntimeError("initializeVegetationGEMV2(): carrierFrequency can't be smaller than specified in ConnectionManager. Please adjust your config.xml file accordingly");
+        }
+    }
+    else // carrierFrequency has not been specified in config.xml
+    {
+        if (cc->hasPar("carrierFrequency")) // parameter carrierFrequency has been specified in ConnectionManager
+        {
+            // set carrierFrequency according to ConnectionManager
+            carrierFrequency = cc->par("carrierFrequency").doubleValue();
+            coreEV << "initializeVegetationGEMV2(): carrierFrequency set from ConnectionManager to " << carrierFrequency << endl;
+        }
+        else // carrierFrequency has not been specified in ConnectionManager
+        {
+            // keep carrierFrequency at default value
+            coreEV << "initializeVegetationGEMV2(): carrierFrequency set from default value to " << carrierFrequency << endl;
+        }
+    }
+
+    VegetationObstacleControl* obstacleControlP = VegetationObstacleControlAccess().getIfExists();
+    if (!obstacleControlP) throw cRuntimeError("initializeVegetationGEMV2: cannot find VegetationObstacleControl module");
+    return new VegetationGemv(*obstacleControlP, carrierFrequency, playgroundSize, coreDebug);
+}
+
+/*parameter parsing for cost235 vegetation model
+ * typedef std::map<std::string, cMsgPar> ParameterMap;
+ * */
+AnalogueModel* PhyLayer80211p::initializeVegetationFITUR(ParameterMap& params){
+
+    // init with default value
+    double carrierFrequency = 5.890e+9;
+    bool useTorus = world->useTorus();
+    const Coord& playgroundSize = *(world->getPgs());
+    bool leaf = true;
+    bool coreDebug = false;
+
+    ParameterMap::iterator it;
+
+    // get carrierFrequency from config
+    it = params.find("carrierFrequency");
+
+    if ( it != params.end() ) // parameter carrierFrequency has been specified in config.xml
+    {
+        // set carrierFrequency
+        carrierFrequency = it->second.doubleValue();
+        coreEV << "initializeVegetationFITUR(): carrierFrequency set from config.xml to " << carrierFrequency << endl;
+
+        // check whether carrierFrequency is not smaller than specified in ConnectionManager
+        if(cc->hasPar("carrierFrequency") && carrierFrequency < cc->par("carrierFrequency").doubleValue())
+        {
+            // throw error
+            throw cRuntimeError("initializeVegetationFITUR(): carrierFrequency can't be smaller than specified in ConnectionManager. Please adjust your config.xml file accordingly");
+        }
+    }
+    else // carrierFrequency has not been specified in config.xml
+    {
+        if (cc->hasPar("carrierFrequency")) // parameter carrierFrequency has been specified in ConnectionManager
+        {
+            // set carrierFrequency according to ConnectionManager
+            carrierFrequency = cc->par("carrierFrequency").doubleValue();
+            coreEV << "createPathLossModel(): carrierFrequency set from ConnectionManager to " << carrierFrequency << endl;
+        }
+        else // carrierFrequency has not been specified in ConnectionManager
+        {
+            // keep carrierFrequency at default value
+            coreEV << "initializeVegetationFITUR(): carrierFrequency set from default value to " << carrierFrequency << endl;
+        }
+    }
+
+    VegetationObstacleControl* obstacleControlP = VegetationObstacleControlAccess().getIfExists();
+    if (!obstacleControlP) throw cRuntimeError("initializeVegetationFITUR(): cannot find VegetationObstacleControl module");
+    return new VegetationFITUR(*obstacleControlP, carrierFrequency, playgroundSize, leaf, coreDebug);
 }
 
 

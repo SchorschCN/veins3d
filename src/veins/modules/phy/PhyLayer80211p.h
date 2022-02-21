@@ -203,8 +203,13 @@ class PhyLayer80211p	: 	public BasePhyLayer,
 	         * @brief Creates and initializes the vegetation model used by gemv2 with the
 	         * passed parameter values.
 	         */
-	        AnalogueModel* initializeVegetationGEMV2(ParameterMap& params);
+		AnalogueModel* initializeVegetationGEMV2(ParameterMap& params);
 
+		/**
+          * @brief Creates and initializes the vegetation model used by FITUR with the
+          * passed parameter values.
+          */
+     AnalogueModel* initializeVegetationFITUR(ParameterMap& params);
 
 		/**
 		 * @brief Creates and returns an instance of the Decider with the specified
