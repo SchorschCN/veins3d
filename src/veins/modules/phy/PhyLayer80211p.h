@@ -30,6 +30,10 @@
 #include "veins/modules/analogueModel/JakesFading.h"
 #include "veins/modules/analogueModel/EnvironmentalDiffraction.h"
 #include "veins/modules/analogueModel/NRayGroundInterference.h"
+#include "veins/modules/analogueModel/VegetationWeissbg.h"
+#include "veins/modules/analogueModel/VegetationITU.h"
+#include "veins/modules/analogueModel/VegetationFITUR.h"
+#include "veins/modules/analogueModel/VegetationGemv.h"
 #include "veins/base/connectionManager/BaseConnectionManager.h"
 #include "veins/modules/phy/Decider80211pToPhy80211pInterface.h"
 #include "veins/base/utils/Move.h"
@@ -197,7 +201,7 @@ class PhyLayer80211p	: 	public BasePhyLayer,
          * @brief Creates and initializes a COST235 vegetation model with the
          * passed parameter values.
          */
-		AnalogueModel* initializeVegetationCOST(ParameterMap& params);
+//		AnalogueModel* initializeVegetationCOST(ParameterMap& params);
 
 	       /**
 	         * @brief Creates and initializes the vegetation model used by gemv2 with the

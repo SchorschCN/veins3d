@@ -38,7 +38,7 @@
 #include <veins/modules/analogueModel/FloorAttenuation.h>
 #include "veins/modules/analogueModel/VegetationWeissbg.h"
 #include "veins/modules/analogueModel/VegetationITU.h"
-#include "veins/modules/analogueModel/VegetationCOST.h"
+#include "veins/modules/analogueModel/VegetationFITUR.h"
 #include "veins/modules/analogueModel/VegetationGemv.h"
 #include <veins/modules/floor/FloorControl.h>
 #include "veins/base/connectionManager/BaseConnectionManager.h"
@@ -128,10 +128,6 @@ AnalogueModel* PhyLayer80211p::getAnalogueModelFromName(std::string name, Parame
 	{
 	    return initializeVegetationITU(params);
 	}
-    else if (name == "VegetationCOST")
-    {
-        return initializeVegetationCOST(params);
-    }
     else if (name == "VegetationGemv")
     {
         return initializeVegetationGEMV2(params);
@@ -829,7 +825,7 @@ AnalogueModel* PhyLayer80211p::initializeVegetationITU(ParameterMap& params){
 }
 /*parameter parsing for cost235 vegetation model
  * typedef std::map<std::string, cMsgPar> ParameterMap;
- * */
+ *
 AnalogueModel* PhyLayer80211p::initializeVegetationCOST(ParameterMap& params){
 
     // init with default value
@@ -876,6 +872,8 @@ AnalogueModel* PhyLayer80211p::initializeVegetationCOST(ParameterMap& params){
     if (!obstacleControlP) throw cRuntimeError("initializeVegetationCOST(): cannot find VegetationObstacleControl module");
     return new VegetationCOST(*obstacleControlP, carrierFrequency, playgroundSize, leaf, coreDebug);
 }
+
+*/
 
 /*parameter parsing for itu vegetation model*/
 AnalogueModel* PhyLayer80211p::initializeVegetationGEMV2(ParameterMap& params){
