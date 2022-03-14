@@ -297,8 +297,8 @@ double VegetationObstacleControl::calcDepth(const Coord& senderPos, const Coord&
 //                std::cout<<"fraction in obstacle is CALCULATED now "<< fractionInObstacle << std::endl;
 				if(o->getFractionInObstacle()!=0)
 				{
-				    std::cout<<"vegetation obstructs signal"<<std::endl;
-				    std::cout<<"current simulation time is: "<<simTime()<<std::endl;
+//				    std::cout<<"vegetation obstructs signal"<<std::endl;
+//				    std::cout<<"current simulation time is: "<<simTime()<<std::endl;
 				    this->fractionInObstacle += o->getFractionInObstacle();
 				}
 				/*

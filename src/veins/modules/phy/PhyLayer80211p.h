@@ -167,6 +167,13 @@ class PhyLayer80211p	: 	public BasePhyLayer,
 		 */
 		AnalogueModel* initializeEnvironmentalDiffraction(ParameterMap& params);
 
+        /**
+         * @brief Creates and initializes an DiffractionEP with the
+         * passed parameter values.
+         */
+        AnalogueModel* initializeDiffractionEP(ParameterMap& params);
+
+
 		/**
 		 * @brief Creates and initializes an NRayGroundInterference with the
 		 * passed parameter values.

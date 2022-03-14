@@ -36,6 +36,7 @@
 #include "veins/modules/analogueModel/NakagamiFading.h"
 #include "veins/modules/analogueModel/DiffAndGround.h"
 #include <veins/modules/analogueModel/FloorAttenuation.h>
+#include "veins/modules/analogueModel/DiffractionEP.h"
 #include "veins/modules/analogueModel/VegetationWeissbg.h"
 #include "veins/modules/analogueModel/VegetationITU.h"
 #include "veins/modules/analogueModel/VegetationFITUR.h"
@@ -106,6 +107,11 @@ AnalogueModel* PhyLayer80211p::getAnalogueModelFromName(std::string name, Parame
 	{
 		if (world->use2D()) error("The EnvironmentalDiffraction model uses nodes' z-positions and only makes sense in a 3D environment. Refusing to work in a 2D world");
 		return initializeEnvironmentalDiffraction(params);
+	}
+	else if (name == "DiffractionEP")
+	{
+	    if (world->use2D()) error("The Diffraction Epstein Peterson model uses nodes' z-positions and only makes sense in a 3D environment. Refusing to work in a 2D world");
+	    return initializeDiffractionEP(params);
 	}
 	else if (name == "NRayGroundInterference")
 	{
@@ -510,6 +516,91 @@ AnalogueModel* PhyLayer80211p::initializeEnvironmentalDiffraction(ParameterMap& 
 
 	return new EnvironmentalDiffraction(carrierFrequency, considerDEM, demFiles, isRasterType, demCellSize, spacing, considerVehicles);
 }
+
+AnalogueModel* PhyLayer80211p::initializeDiffractionEP(ParameterMap& params) {
+    // init with default value
+    double carrierFrequency = 5.890e+9;
+    bool considerDEM = false;
+    bool considerVehicles = false;
+
+    ParameterMap::iterator it;
+
+    // get carrierFrequency from config
+    it = params.find("carrierFrequency");
+
+    if ( it != params.end() ) // parameter carrierFrequency has been specified in config.xml
+    {
+        // set carrierFrequency
+        carrierFrequency = it->second.doubleValue();
+        coreEV << "initializeDiffractionEP(): carrierFrequency set from config.xml to " << carrierFrequency << endl;
+
+        // check whether carrierFrequency is not smaller than specified in ConnectionManager
+        if(cc->hasPar("carrierFrequency") && carrierFrequency < cc->par("carrierFrequency").doubleValue())
+        {
+            // throw error
+            throw cRuntimeError("initializeDiffractionEP(): carrierFrequency can't be smaller than specified in ConnectionManager. Please adjust your config.xml file accordingly");
+        }
+    }
+    else // carrierFrequency has not been specified in config.xml
+    {
+        if (cc->hasPar("carrierFrequency")) // parameter carrierFrequency has been specified in ConnectionManager
+        {
+            // set carrierFrequency according to ConnectionManager
+            carrierFrequency = cc->par("carrierFrequency").doubleValue();
+            coreEV << "initializeDiffractionEP(): carrierFrequency set from ConnectionManager to " << carrierFrequency << endl;
+        }
+        else // carrierFrequency has not been specified in ConnectionManager
+        {
+            // keep carrierFrequency at default value
+            coreEV << "initializeDiffractionEP(): carrierFrequency set from default value to " << carrierFrequency << endl;
+        }
+    }
+
+    it = params.find("considerDEM");
+    std::vector<std::string> demFiles;
+    bool isRasterType;
+    double spacing;
+    double demCellSize;
+    if (it != params.end() && it->second.boolValue()) {
+        considerDEM = true;
+        it = params.find("demFiles");
+        if (it == params.end()) {
+            throw cRuntimeError("initializeEnvironmentalDiffraction(): No DEM file(s) provided in config.xml");
+        } else {
+            demFiles = split(it->second.stringValue(), ',');
+        }
+        it = params.find("isRasterType");
+        if (it == params.end()) {
+            throw cRuntimeError("initializeEnvironmentalDiffraction(): Not specified whether DEM is raster type or vector type (parameter isRasterType)");
+        } else {
+            isRasterType = it->second.boolValue();
+        }
+        it = params.find("spacing");
+        if (it == params.end()) {
+            throw cRuntimeError("initializeEnvironmentalDiffraction(): No spacing of distance between height profile points specified");
+        } else {
+            spacing = it->second.doubleValue();
+        }
+        it = params.find("demCellSize");
+        if (it == params.end()) {
+            demCellSize = 0.5;
+        } else {
+            demCellSize = it->second.doubleValue();
+        }
+    }
+
+    it = params.find("considerVehicles");
+    if (it != params.end() && it->second.boolValue()) {
+        considerVehicles = true;
+    }
+
+    if (!considerDEM && !considerVehicles) {
+        throw cRuntimeError("initializeDiffractionEP(): At least one of considerDEM and considerVehicles must be set to true");
+    }
+
+    return new DiffractionEP(carrierFrequency, considerDEM, demFiles, isRasterType, demCellSize, spacing, considerVehicles);
+}
+
 
 AnalogueModel* PhyLayer80211p::initializeNRayGroundInterference(ParameterMap& params) {
 	// init with default value

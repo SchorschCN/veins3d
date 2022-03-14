@@ -142,7 +142,7 @@ double Obstacle::calculateAttenuation(const Coord& senderPos, const Coord& recei
 		double p2 = *(i++);
 		fractionInObstacle += (p2 - p1);
 	}
-	std::cout<<"FRACTION IN OBSTACLE IS: "<<fractionInObstacle<<std::endl;
+//	std::cout<<"FRACTION IN OBSTACLE IS: "<<fractionInObstacle<<std::endl;
 	// calculate attenuation
 	double totalDistance = senderPos.distance(receiverPos);
 	double attenuation = (attenuationPerCut * numCuts) + (attenuationPerMeter * fractionInObstacle * totalDistance);
