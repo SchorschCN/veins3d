@@ -202,11 +202,13 @@ double DiffractionEP::calcAttenuation(const Coord& senderPos, const Coord& recei
         std::cout<<"no knife edges"<<std::endl;
         return 1.0;
     }
+    /*
     if (edgeMap.size() >= 6)
     {
         std::cout<<"too many knife edges, model not applicable"<<std::endl;
         return 1.0;
     }
+    */
     std::map<double,double>::iterator it = edgeMap.begin();
     double d1,d2,h;
     double sum,before,after;
@@ -243,7 +245,7 @@ double DiffractionEP::calcAttenuation(const Coord& senderPos, const Coord& recei
                 sum=d1+d2;      //  d1/sum=mid_diff_to_lower/higher_diff_to_lower;
                 mid_diff_to_lower=d1*higher_diff_to_lower/sum;
                 h=mid_second-former_second-mid_diff_to_lower;
-                v=getDiffParameter(d1*spacing,d2*spacing,h);
+                v=getDiffParameter(d1*spacing/1000,d2*spacing/1000,h);
                 L+=calcDiffLoss(v);
             }
             /*latter edge is lower*/
