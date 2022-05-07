@@ -124,6 +124,8 @@ private:
      * diffraction parameter as input
      * */
     double calcDiffLoss(double parameter);
+    double calcCorrection(double a, double b, double c);
+    double hCalculation(double h1, double h2, double h3, double d1, double d2);
 public:
     /**
      * @brief Initializes the analogue model.

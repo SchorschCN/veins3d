@@ -202,20 +202,30 @@ double DiffractionEP::calcAttenuation(const Coord& senderPos, const Coord& recei
         std::cout<<"no knife edges"<<std::endl;
         return 1.0;
     }
-    /*
-    if (edgeMap.size() >= 6)
+
+    if (edgeMap.size() >= 4)
     {
-        std::cout<<"too many knife edges, model not applicable"<<std::endl;
+        std::cout<<"too many knife edges, epstein-peterson model not applicable"<<std::endl;
         return 1.0;
     }
-    */
+
     std::map<double,double>::iterator it = edgeMap.begin();
     double d1,d2,h;
     double sum,before,after;
     double mid_diff_to_lower, higher_diff_to_lower;
     double v=0,L=0;
+    double correction = 0;
     unsigned int count=edgeMap.size()-2;
-
+    if(count==2)
+    {
+        auto nx = std::next(it,1);
+        double d1 = nx->first;
+        nx = std::next(it,2);
+        double d2 = nx->first - d1;
+        nx = std::next(it,3);
+        double d3 = nx->first - d2;
+        L+=calcCorrection(d1,d2,d3);
+    }
     for(;it!=edgeMap.end();++it)
     {
             if(it->first==dLos)
@@ -228,14 +238,20 @@ double DiffractionEP::calcAttenuation(const Coord& senderPos, const Coord& recei
 //            std::prev(it, 4)
             double former_first=it->first;
             double former_second=it->second;
-            ++it;
-            double mid_first=it->first;
-            double mid_second=it->second;
-            ++it;
-            double latter_first=it->first;
-            double latter_second=it->second;
-            --it;
-            --it;
+            auto nx = std::next(it, 1);
+            double mid_first=nx->first;
+            double mid_second=nx->second;
+            nx = std::next(it, 2);
+            double latter_first=nx->first;
+            double latter_second=nx->second;
+//            ++it;
+//           double mid_first=it->first;
+//           double mid_second=it->second;
+//            ++it;
+//            double latter_first=it->first;
+//            double latter_second=it->second;
+//            --it;
+//            --it;
             d1=mid_first-former_first;
             d2=latter_first-mid_first;
             /*former edge is lower*/
@@ -245,7 +261,7 @@ double DiffractionEP::calcAttenuation(const Coord& senderPos, const Coord& recei
                 sum=d1+d2;      //  d1/sum=mid_diff_to_lower/higher_diff_to_lower;
                 mid_diff_to_lower=d1*higher_diff_to_lower/sum;
                 h=mid_second-former_second-mid_diff_to_lower;
-                v=getDiffParameter(d1*spacing/1000,d2*spacing/1000,h);
+                v=getDiffParameter(d1,d2,h);
                 L+=calcDiffLoss(v);
             }
             /*latter edge is lower*/
@@ -255,19 +271,18 @@ double DiffractionEP::calcAttenuation(const Coord& senderPos, const Coord& recei
                 sum=d1+d2;      //  d1/sum=mid_diff_to_lower/higher_diff_to_lower;
                 mid_diff_to_lower=d2*higher_diff_to_lower/sum;
                 h=it->second-latter_second-mid_diff_to_lower;
-                v=getDiffParameter(d1*spacing,d2*spacing,h);
+                v=getDiffParameter(d1,d2,h);
                 L+=calcDiffLoss(v);
             }
             else
             {
                     h=mid_second-latter_second;
-                    v=getDiffParameter(d1*spacing,d2*spacing,h);
+                    v=getDiffParameter(d1,d2,h);
                     L+=calcDiffLoss(v);
             }
 //        if(it)
             std::cout<<"loss calculated  :"<<L<<std::endl;
     }
-
     return FWMath::dBm2mW(-L);
 /*
     double d_p, v_p;
@@ -352,7 +367,7 @@ bool DiffractionEP::segmentsIntersect(Coord p1From, Coord p1To, Coord p2From, Co
 
     return true;
 }
-
+#if 0
 std::pair<double, double> DiffractionEP::getHighestV(const std::map<double, double>& edgeMap, double a, double b) {
     std::pair<double, double> result = std::make_pair(0.0, -1.0);
     for (std::map<double, double>::const_iterator it = ++(edgeMap.find(a)); it != edgeMap.find(b); ++it) {
@@ -373,13 +388,14 @@ double DiffractionEP::getJFuncValue(double v) {
     if (v <= -0.78) return 0;
     else return 6.9 + 20*log10(sqrt((v - 0.1)*(v - 0.1) + 1) + v - 0.1);
 }
+#endif
 
 /*
  * calculate fresnel-kirchhoff diffraction parameter
  * */
 double DiffractionEP::getDiffParameter(double d1, double d2, double h)
 {
-    return h*sqrt(2*(d1+d2)/this->wavelength*d1*d2);
+    return h*sqrt(2*(d1+d2)/(this->wavelength*d1*d2));
 }
 
 /*
@@ -398,4 +414,18 @@ double DiffractionEP::calcDiffLoss(double parameter)
         return -20*log10(0.225/parameter);
     else
         return 0;
+}
+
+double DiffractionEP::calcCorrection(double a, double b, double c)
+{
+    double spaceParameter=((a+b)+(b+c))/(b*(a+b+c));
+    return 10*log10(spaceParameter);
+}
+/*
+ * calculate h using earth radius
+ * */
+double DiffractionEP::hCalculation(double h1, double h2, double h3, double d1, double d2)
+{
+    double h = h2 + (d1*d2/2/R_E) - (h1*d2 + h2*d1)/(d1+d2);
+    return h;
 }

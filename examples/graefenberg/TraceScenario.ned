@@ -30,7 +30,7 @@ network TraceScenario
     	obstacles: ObstacleControl {
             @display("p=240,50");
         }
-        vegetationObstacles: VegetationObstacleControl;
+//        vegetationObstacles: VegetationObstacleControl;
         nodes[2]: Trace;
         annotations: AnnotationManager {
             @display("p=260,50");
