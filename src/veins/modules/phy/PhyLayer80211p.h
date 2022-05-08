@@ -173,6 +173,11 @@ class PhyLayer80211p	: 	public BasePhyLayer,
          */
         AnalogueModel* initializeDiffractionEP(ParameterMap& params);
 
+        /**
+         * @brief Creates and initializes an DiffractionGiovaneli with the
+         * passed parameter values.
+         */
+        AnalogueModel* initializeDiffractionGiovaneli(ParameterMap& params);
 
 		/**
 		 * @brief Creates and initializes an NRayGroundInterference with the

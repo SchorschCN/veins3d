@@ -1,11 +1,9 @@
-#include "veins/modules/analogueModel/DiffractionEP.h"
+#include "veins/modules/analogueModel/DiffractionGiovaneli.h"
 #include "veins/base/utils/FindModule.h"
 #include "veins/modules/mobility/traci/TraCIScenarioManager.h"
 #include "veins/modules/mobility/traci/TraCIMobility.h"
 #include "veins/modules/mobility/traci/TraCICommandInterface.h"
 #include "veins/modules/mobility/TraceMobility.h"
-
-#include <iostream>
 
 #define WIDTH 1.8 // assumed vehicle width
 #define LENGTH 4.5 // assumed vehicle length
@@ -17,13 +15,13 @@ using Veins::TraCIMobility;
 using Veins::TraCICommandInterface;
 
 
-const Coord* DiffractionEP::pgs;
-double* DiffractionEP::demCache;
-size_t DiffractionEP::cacheRows;
-size_t DiffractionEP::cacheCols;
+const Coord* DiffractionGiovaneli::pgs;
+double* DiffractionGiovaneli::demCache;
+size_t DiffractionGiovaneli::cacheRows;
+size_t DiffractionGiovaneli::cacheCols;
 
 
-DiffractionEP::DiffractionEP(double carrierFrequency, bool considerDEM, std::vector<std::string> demFiles,
+DiffractionGiovaneli::DiffractionGiovaneli(double carrierFrequency, bool considerDEM, std::vector<std::string> demFiles,
         bool isRasterType, double demCellSize, double spacing, bool considerVehicles){
     this->wavelength = BaseWorldUtility::speedOfLight()/carrierFrequency;
     this->spacing = spacing;
@@ -35,15 +33,15 @@ DiffractionEP::DiffractionEP(double carrierFrequency, bool considerDEM, std::vec
 
     if (!considerDEM) return;
 
-    // the DEM cache is shared by all DiffractionEP objects and needs to be initialized once;
+    // the DEM cache is shared by all DiffractionGiovaneli objects and needs to be initialized once;
     // if demCellSize equals 0, DEM caching is turned off
     if (demCellSize != 0.0 && demCache == NULL) {
         BaseWorldUtility* world = FindModule<BaseWorldUtility*>::findGlobalModule();
-        DiffractionEP::pgs = world->getPgs();
+        DiffractionGiovaneli::pgs = world->getPgs();
         // determine the size of the DEM cache based on the playground size and the grid granularity
-        DiffractionEP::cacheCols = (size_t)ceil(pgs->x/demCellSize);
-        DiffractionEP::cacheRows = (size_t)ceil(pgs->y/demCellSize);
-        int n = DiffractionEP::cacheCols*DiffractionEP::cacheRows;
+        DiffractionGiovaneli::cacheCols = (size_t)ceil(pgs->x/demCellSize);
+        DiffractionGiovaneli::cacheRows = (size_t)ceil(pgs->y/demCellSize);
+        int n = DiffractionGiovaneli::cacheCols*DiffractionGiovaneli::cacheRows;
         // use 1D array for storage and initialize with NaN values
         demCache = new double[n];
         std::fill_n(demCache, n, std::numeric_limits<double>::quiet_NaN());
@@ -58,7 +56,7 @@ DiffractionEP::DiffractionEP(double carrierFrequency, bool considerDEM, std::vec
  * add (deleted) Alternative constructor implementation
  * without this, undefined symbol error will come
  * */
-DiffractionEP::DiffractionEP(double carrierFrequency, bool considerDEM, double demCellSize, double spacing, bool considerVehicles){
+DiffractionGiovaneli::DiffractionGiovaneli(double carrierFrequency, bool considerDEM, double demCellSize, double spacing, bool considerVehicles){
     this->wavelength = BaseWorldUtility::speedOfLight()/carrierFrequency;
     this->spacing = spacing;
     this->demCellSize = demCellSize;
@@ -67,15 +65,15 @@ DiffractionEP::DiffractionEP(double carrierFrequency, bool considerDEM, double d
 
     if (!considerDEM) return;
 
-    // the DEM cache is shared by all DiffractionEP objects and needs to be initialized once;
+    // the DEM cache is shared by all DiffractionGiovaneli objects and needs to be initialized once;
     // if demCellSize equals 0, DEM caching is turned off
     if (demCellSize != 0.0 && demCache == NULL) {
         BaseWorldUtility* world = FindModule<BaseWorldUtility*>::findGlobalModule();
-        DiffractionEP::pgs = world->getPgs();
+        DiffractionGiovaneli::pgs = world->getPgs();
         // determine the size of the DEM cache based on the playground size and the grid granularity
-        DiffractionEP::cacheCols = (size_t)ceil(pgs->x/demCellSize);
-        DiffractionEP::cacheRows = (size_t)ceil(pgs->y/demCellSize);
-        int n = DiffractionEP::cacheCols*DiffractionEP::cacheRows;
+        DiffractionGiovaneli::cacheCols = (size_t)ceil(pgs->x/demCellSize);
+        DiffractionGiovaneli::cacheRows = (size_t)ceil(pgs->y/demCellSize);
+        int n = DiffractionGiovaneli::cacheCols*DiffractionGiovaneli::cacheRows;
         // use 1D array for storage and initialize with NaN values
         demCache = new double[n];
         std::fill_n(demCache, n, std::numeric_limits<double>::quiet_NaN());
@@ -86,7 +84,7 @@ DiffractionEP::DiffractionEP(double carrierFrequency, bool considerDEM, double d
 }
 
 
-void DiffractionEP::filterSignal(AirFrame *frame, const Coord& senderPos, const Coord& receiverPos) {
+void DiffractionGiovaneli::filterSignal(AirFrame *frame, const Coord& senderPos, const Coord& receiverPos) {
     Signal& s = frame->getSignal();
 
     double factor = calcAttenuation(senderPos, receiverPos);
@@ -98,7 +96,7 @@ void DiffractionEP::filterSignal(AirFrame *frame, const Coord& senderPos, const 
     s.addAttenuation(attMapping);
 }
 
-double DiffractionEP::calcAttenuation(const Coord& senderPos, const Coord& receiverPos) {
+double DiffractionGiovaneli::calcAttenuation(const Coord& senderPos, const Coord& receiverPos) {
     std::map<double, double> edgeMap;
 
     Coord los = receiverPos - senderPos;
@@ -176,143 +174,85 @@ double DiffractionEP::calcAttenuation(const Coord& senderPos, const Coord& recei
                 size_t x = (size_t)(p.x/demCellSize);
                 size_t y = (size_t)(p.y/demCellSize);
                 // if this height value has not been determined yet, compute it now
-                if (std::isnan(DiffractionEP::demCache[y*DiffractionEP::cacheCols + x])) {
+                if (std::isnan(DiffractionGiovaneli::demCache[y*DiffractionGiovaneli::cacheCols + x])) {
                     // determine the coordinates of the center of the required grid cell
                     double cellCenterX, cellCenterY;
-                    if (x < DiffractionEP::cacheCols - 1) cellCenterX = (0.5 + x)*demCellSize;
-                    else cellCenterX = (DiffractionEP::pgs->x + x*demCellSize)/2;
-                    if (y < DiffractionEP::cacheRows - 1) cellCenterY = (0.5 + y)*demCellSize;
-                    else cellCenterY = (DiffractionEP::pgs->y + y*demCellSize)/2;
+                    if (x < DiffractionGiovaneli::cacheCols - 1) cellCenterX = (0.5 + x)*demCellSize;
+                    else cellCenterX = (DiffractionGiovaneli::pgs->x + x*demCellSize)/2;
+                    if (y < DiffractionGiovaneli::cacheRows - 1) cellCenterY = (0.5 + y)*demCellSize;
+                    else cellCenterY = (DiffractionGiovaneli::pgs->y + y*demCellSize)/2;
                     // get the height value by querying the DEM
                     double lon, lat;
                     //std::tie(lon, lat) = traciCI->getLonLat(Coord(cellCenterX, cellCenterY));
                     Coord lonLat = tm->cartToLonLat(Coord(cellCenterX, cellCenterY));
-                    //demCache[y*DiffractionEP::cacheCols + x] = hm.getZ(Position(lon, lat));
-                    demCache[y*DiffractionEP::cacheCols + x] = hm.getZ(Position(lonLat.x, lonLat.y));
+                    //demCache[y*DiffractionGiovaneli::cacheCols + x] = hm.getZ(Position(lon, lat));
+                    demCache[y*DiffractionGiovaneli::cacheCols + x] = hm.getZ(Position(lonLat.x, lonLat.y));
                 }
                 // return the height value as stored in the DEM cache
-                edgeMap[d] = demCache[y*DiffractionEP::cacheCols + x];
+                edgeMap[d] = demCache[y*DiffractionGiovaneli::cacheCols + x];
             }
         }
     }
     // now apply multiple knife-edge model
-    // based on ITU-R Recommendation P.526-11: Propagation by diffraction (10/2009)
-    if (edgeMap.size() == 2)
-    {
-        std::cout<<"no knife edges"<<std::endl;
-        return 1.0;
-    }
-
-    if (edgeMap.size() >= 4)
-    {
-        std::cout<<"too many knife edges, epstein-peterson model not applicable"<<std::endl;
-        return 1.0;
-    }
-
-    std::map<double,double>::iterator it = edgeMap.begin();
-    double d1,d2,h;
-    double sum,before,after;
-    double mid_diff_to_lower, higher_diff_to_lower;
-    double v=0,L=0;
-    double correction = 0;
-    unsigned int count=edgeMap.size()-2;
-    if(count==2)
-    {
-        auto nx = std::next(it,1);
-        double d1 = nx->first;
-        nx = std::next(it,2);
-        double d2 = nx->first - d1;
-        nx = std::next(it,3);
-        double d3 = nx->first - d2;
-        L+=calcCorrection(d1,d2,d3);
-    }
-    for(;it!=std::prev(edgeMap.end(),2);++it)
-    {
-            if(it->first==dLos)
-            {
-//                std::cout<<"this is receiver at:"<<it->first<<" "<<it->second<<std::endl;
-                continue;
-            }
-//            std::cout<<"this is edge :"<<it->first<<" "<<it->second<<std::endl;
-//            auto nx = std::next(it, 2);
-//            std::prev(it, 4)
-            double former_first=it->first;
-            double former_second=it->second;
-            auto nx = std::next(it, 1);
-            double mid_first=nx->first;
-            double mid_second=nx->second;
-            nx = std::next(it, 2);
-            double latter_first=nx->first;
-            double latter_second=nx->second;
-//            ++it;
-//           double mid_first=it->first;
-//           double mid_second=it->second;
-//            ++it;
-//            double latter_first=it->first;
-//            double latter_second=it->second;
-//            --it;
-//            --it;
-            d1=mid_first-former_first;
-            d2=latter_first-mid_first;
-            /*former edge is lower*/
-            if(latter_second>former_second)
-            {
-                higher_diff_to_lower=latter_second-former_second;
-                sum=d1+d2;      //  d1/sum=mid_diff_to_lower/higher_diff_to_lower;
-                mid_diff_to_lower=d1*higher_diff_to_lower/sum;
-                h=mid_second-former_second-mid_diff_to_lower;
-                v=getDiffParameter(d1,d2,h);
-                L+=calcDiffLoss(v);
-            }
-            /*latter edge is lower*/
-            else if(latter_second<former_second)
-            {
-                higher_diff_to_lower=former_second-latter_second;
-                sum=d1+d2;      //  d1/sum=mid_diff_to_lower/higher_diff_to_lower;
-                mid_diff_to_lower=d2*higher_diff_to_lower/sum;
-                h=it->second-latter_second-mid_diff_to_lower;
-                v=getDiffParameter(d1,d2,h);
-                L+=calcDiffLoss(v);
-            }
-            else
-            {
-                    h=mid_second-latter_second;
-                    v=getDiffParameter(d1,d2,h);
-                    L+=calcDiffLoss(v);
-            }
-//        if(it)
-            std::cout<<"loss calculated  :"<<L<<std::endl;
-    }
-    return FWMath::dBm2mW(-L);
-/*
-    double d_p, v_p;
+    if (edgeMap.size() == 2) return 1.0;
+    double d_p = 0, v_p = 0;
     std::tie(d_p, v_p) = getHighestV(edgeMap, 0.0, dLos);
     if (v_p <= -0.78) return 1.0;
-
+    std::cout<<"no problem returning highestVIndex"<<std::endl;
     double d_t, v_t;
     if (++(edgeMap.begin()) == edgeMap.find(d_p)) {
+        std::cout<<"no left auxiliary edge"<<std::endl;
         v_t = -1.0;
     } else {
+        std::cout<<"start determine left auxiliary edge"<<std::endl;
         std::tie(d_t, v_t) = getHighestV(edgeMap, 0.0, d_p);
     }
-
+//    std::cout<<"no problem determine left auxiliary edge"<<std::endl;
     double d_r, v_r;
     if (++(edgeMap.find(d_p)) == edgeMap.find(dLos)) {
+        std::cout<<"no right auxiliary edge"<<std::endl;
         v_r = -1.0;
     } else {
+        std::cout<<"start determine right auxiliary edge"<<std::endl;
         std::tie(d_r, v_r) = getHighestV(edgeMap, d_p, dLos);
     }
+//    std::cout<<"no problem determine auxiliary edge"<<std::endl;
+    double new_tx, new_rx;
+    /* determine altitude of "equivalent" transmitter and receiver*/
+    if(v_t != -1.0)
+    {
+        double diff_pt = edgeMap[d_p]-edgeMap[d_t];
+        double distance_pt = d_p - d_t;
+        double diff_tx_t = diff_pt * d_t / distance_pt;
+        new_tx = edgeMap[d_t] - diff_tx_t;
+
+    }
+//    std::cout<<"no problem determine tx"<<std::endl;
+    if(v_r != -1.0)
+    {
+        double diff_pr = edgeMap[d_p]-edgeMap[d_r];
+        double distance_rx_r = dLos - d_r;
+        double distance_rp = d_r-d_p;
+        double diff_rx_r = diff_pr * distance_rx_r / distance_rp;
+        new_rx = edgeMap[d_r] - diff_rx_r;
+    }
+    double d_rxp = dLos-d_p;
+//    double equivalent_tx = edgeMap[0];
+//    double equivalent_rx = edgeMap[dLos];
+    double altitude_p = edgeMap[d_p];
+    double p_h = altitude_p + (d_p*d_rxp/2/R_E) - ((new_tx*d_rxp + new_rx*d_p)/dLos);
+    v_p = p_h*sqrt(2*dLos/wavelength/d_p/d_rxp);
 
     double T = 1.0 - exp(-getJFuncValue(v_p)/6.0);
     double C = 10.0 + 0.04*dLos/1000.0;
     double L = getJFuncValue(v_p) + T*(getJFuncValue(v_t) + getJFuncValue(v_r) + C);
 
 
-*/
-//    return FWMath::dBm2mW(-L);
+
+    return FWMath::dBm2mW(-L);
 }
 
-std::pair<double, double> DiffractionEP::isInLOS(const Coord& pos, const Coord& orient, const Coord& senderPos, const Coord& receiverPos) {
+std::pair<double, double> DiffractionGiovaneli::isInLOS(const Coord& pos, const Coord& orient, const Coord& senderPos, const Coord& receiverPos) {
     std::vector<Coord> shape;
     Coord orient2D(orient.x, orient.y);
     orient2D = orient2D/orient2D.length();
@@ -352,7 +292,7 @@ std::pair<double, double> DiffractionEP::isInLOS(const Coord& pos, const Coord& 
     } else return std::make_pair(-1.0, -1.0);
 }
 
-bool DiffractionEP::segmentsIntersect(Coord p1From, Coord p1To, Coord p2From, Coord p2To) {
+bool DiffractionGiovaneli::segmentsIntersect(Coord p1From, Coord p1To, Coord p2From, Coord p2To) {
     Coord p1Vec = p1To - p1From;
     Coord p2Vec = p2To - p2From;
     Coord p1p2 = p1From - p2From;
@@ -367,8 +307,32 @@ bool DiffractionEP::segmentsIntersect(Coord p1From, Coord p1To, Coord p2From, Co
 
     return true;
 }
-#if 0
-std::pair<double, double> DiffractionEP::getHighestV(const std::map<double, double>& edgeMap, double a, double b) {
+
+std::pair<double, double> DiffractionGiovaneli::getHighestV(const std::map<double, double>& edgeMap, double a, double b) {
+    std::pair<double, double> result = std::make_pair(0.0, -1.0);
+    for (std::map<double, double>::const_iterator it = ++(edgeMap.find(a)); it != edgeMap.find(b); ++it) {
+        double d_an = it->first - a;
+//        std::cout<<"new edge calculated, d_an="<<d_an<<std::endl;
+        double d_nb = b - it->first;
+        double d_ab = b - a;
+        double h = it->second + (d_an*d_nb/2/R_E) - ((edgeMap.at(a)*d_nb + edgeMap.at(b)*d_an)/d_ab);
+        double v_n = h*sqrt(2*d_ab/wavelength/d_an/d_nb);
+//        std::cout<<"new v calculated, highestV function will end"<<std::endl;
+        if (v_n > result.second) {
+            result.first = it->first;
+            result.second = v_n;
+        }
+    }
+    return result;
+}
+
+/*
+ * determine the edge with highest V, but return its distance to transmitter along los,
+ * differing from getHighestV
+ *
+ * */
+double DiffractionGiovaneli::getHighestVIndex(const std::map<double, double>& edgeMap, double a, double b)
+{
     std::pair<double, double> result = std::make_pair(0.0, -1.0);
     for (std::map<double, double>::const_iterator it = ++(edgeMap.find(a)); it != edgeMap.find(b); ++it) {
         double d_an = it->first - a;
@@ -381,51 +345,10 @@ std::pair<double, double> DiffractionEP::getHighestV(const std::map<double, doub
             result.second = v_n;
         }
     }
-    return result;
+    return result.first;
 }
 
-double DiffractionEP::getJFuncValue(double v) {
+double DiffractionGiovaneli::getJFuncValue(double v) {
     if (v <= -0.78) return 0;
     else return 6.9 + 20*log10(sqrt((v - 0.1)*(v - 0.1) + 1) + v - 0.1);
-}
-#endif
-
-/*
- * calculate fresnel-kirchhoff diffraction parameter
- * */
-double DiffractionEP::getDiffParameter(double d1, double d2, double h)
-{
-    return h*sqrt(2*(d1+d2)/(this->wavelength*d1*d2));
-}
-
-/*
- * calculate diffraction loss
- * diffraction parameter as input
- * */
-double DiffractionEP::calcDiffLoss(double parameter)
-{
-    if(parameter>-0.8&&parameter<0)
-        return -20*log10(0.5-0.62*parameter);
-    else if ( parameter>= 0 && parameter<1)
-        return -20*log10(pow(0.5,-0.95*parameter));
-    else if ( parameter>= 1 && parameter<2.4)
-        return -20*log10(0.4-sqrt((0.1184-pow((0.38-0.1*parameter),2))));
-    else if ( parameter > 2.4)
-        return -20*log10(0.225/parameter);
-    else
-        return 0;
-}
-
-double DiffractionEP::calcCorrection(double a, double b, double c)
-{
-    double spaceParameter=((a+b)+(b+c))/(b*(a+b+c));
-    return 10*log10(spaceParameter);
-}
-/*
- * calculate h using earth radius
- * */
-double DiffractionEP::hCalculation(double h1, double h2, double h3, double d1, double d2)
-{
-    double h = h2 + (d1*d2/2/R_E) - (h1*d2 + h2*d1)/(d1+d2);
-    return h;
 }

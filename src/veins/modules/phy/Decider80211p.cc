@@ -441,8 +441,8 @@ simtime_t Decider80211p::processSignalEnd(AirFrame* msg) {
 	DeciderResult* result;
 
 	//record recieved power
-	if (simTime() >= getSimulation()->getWarmupPeriod())
-	    receivedPow.record(recvPower_dBm);
+//	if (simTime() >= getSimulation()->getWarmupPeriod())
+	receivedPow.record(recvPower_dBm);
 
 	if (frame->getUnderSensitivity()) {
 		//this frame was not even detected by the radio card
