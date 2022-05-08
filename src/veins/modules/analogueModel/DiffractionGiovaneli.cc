@@ -195,61 +195,64 @@ double DiffractionGiovaneli::calcAttenuation(const Coord& senderPos, const Coord
     }
     // now apply multiple knife-edge model
     if (edgeMap.size() == 2) return 1.0;
-    double d_p = 0, v_p = 0;
+    double d_p, v_p;
     std::tie(d_p, v_p) = getHighestV(edgeMap, 0.0, dLos);
     if (v_p <= -0.78) return 1.0;
-    std::cout<<"no problem returning highestVIndex"<<std::endl;
+
     double d_t, v_t;
     if (++(edgeMap.begin()) == edgeMap.find(d_p)) {
-        std::cout<<"no left auxiliary edge"<<std::endl;
         v_t = -1.0;
     } else {
-        std::cout<<"start determine left auxiliary edge"<<std::endl;
         std::tie(d_t, v_t) = getHighestV(edgeMap, 0.0, d_p);
     }
-//    std::cout<<"no problem determine left auxiliary edge"<<std::endl;
+
     double d_r, v_r;
     if (++(edgeMap.find(d_p)) == edgeMap.find(dLos)) {
-        std::cout<<"no right auxiliary edge"<<std::endl;
         v_r = -1.0;
     } else {
-        std::cout<<"start determine right auxiliary edge"<<std::endl;
         std::tie(d_r, v_r) = getHighestV(edgeMap, d_p, dLos);
     }
-//    std::cout<<"no problem determine auxiliary edge"<<std::endl;
-    double new_tx, new_rx;
-    /* determine altitude of "equivalent" transmitter and receiver*/
-    if(v_t != -1.0)
+    if(v_p<=0)
     {
-        double diff_pt = edgeMap[d_p]-edgeMap[d_t];
-        double distance_pt = d_p - d_t;
-        double diff_tx_t = diff_pt * d_t / distance_pt;
-        new_tx = edgeMap[d_t] - diff_tx_t;
-
+        double T = 1.0 - exp(-getJFuncValue(v_p)/6.0);
+        double C = 10.0 + 0.04*dLos/1000.0;
+        double L = getJFuncValue(v_p) + T*(getJFuncValue(v_t) + getJFuncValue(v_r) + C);
+        return FWMath::dBm2mW(-L);
     }
-//    std::cout<<"no problem determine tx"<<std::endl;
-    if(v_r != -1.0)
+    else
     {
-        double diff_pr = edgeMap[d_p]-edgeMap[d_r];
-        double distance_rx_r = dLos - d_r;
-        double distance_rp = d_r-d_p;
-        double diff_rx_r = diff_pr * distance_rx_r / distance_rp;
-        new_rx = edgeMap[d_r] - diff_rx_r;
+        double new_tx=edgeMap[0];
+        double new_rx=edgeMap[dLos];
+
+        if(v_t > 0)
+        {
+            double diff_pt = edgeMap[d_p]-edgeMap[d_t];
+            double distance_pt = d_p - d_t;
+            double diff_tx_t = diff_pt * d_t / distance_pt;
+            new_tx = edgeMap[d_t] - diff_tx_t;
+            std::cout<<"giovaneli used, equivalent tx calculated"<<std::endl;
+        }
+        if(v_r >0)
+        {
+            double diff_pr = edgeMap[d_p]-edgeMap[d_r];
+            double distance_rx_r = dLos - d_r;
+            double distance_rp = d_r-d_p;
+            double diff_rx_r = diff_pr * distance_rx_r / distance_rp;
+            new_rx = edgeMap[d_r] - diff_rx_r;
+            std::cout<<"giovaneli used, equivalent rx calculated"<<std::endl;
+        }
+        double d_rxp = dLos-d_p;
+
+        double altitude_p = edgeMap[d_p];
+        double p_h = altitude_p + (d_p*d_rxp/2/R_E) - ((new_tx*d_rxp + new_rx*d_p)/dLos);
+        std::cout<<"old v_p = "<< v_p <<std::endl;
+        v_p = p_h*sqrt(2*dLos/wavelength/d_p/d_rxp);
+        std::cout<<"new v_p = "<< v_p <<std::endl;
+        double T = 1.0 - exp(-getJFuncValue(v_p)/6.0);
+        double C = 10.0 + 0.04*dLos/1000.0;
+        double L = getJFuncValue(v_p) + T*(getJFuncValue(v_t) + getJFuncValue(v_r) + C);
+        return FWMath::dBm2mW(-L);
     }
-    double d_rxp = dLos-d_p;
-//    double equivalent_tx = edgeMap[0];
-//    double equivalent_rx = edgeMap[dLos];
-    double altitude_p = edgeMap[d_p];
-    double p_h = altitude_p + (d_p*d_rxp/2/R_E) - ((new_tx*d_rxp + new_rx*d_p)/dLos);
-    v_p = p_h*sqrt(2*dLos/wavelength/d_p/d_rxp);
-
-    double T = 1.0 - exp(-getJFuncValue(v_p)/6.0);
-    double C = 10.0 + 0.04*dLos/1000.0;
-    double L = getJFuncValue(v_p) + T*(getJFuncValue(v_t) + getJFuncValue(v_r) + C);
-
-
-
-    return FWMath::dBm2mW(-L);
 }
 
 std::pair<double, double> DiffractionGiovaneli::isInLOS(const Coord& pos, const Coord& orient, const Coord& senderPos, const Coord& receiverPos) {
