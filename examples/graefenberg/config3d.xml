@@ -5,7 +5,7 @@
 			<parameter name="alpha" type="double" value="2.0"/>
 			<parameter name="carrierFrequency" type="double" value="5.890e+9"/>
 		</AnalogueModel>
-		<AnalogueModel type="DiffractionEP">
+		<AnalogueModel type="DiffractionGiovaneli">
 			<parameter name="carrierFrequency" type="double" value="5.890e+9"/>
 			<parameter name="considerDEM" type="bool" value="true"/>
 			<parameter name="demFiles" type="string" value="g1m.tif"/>
